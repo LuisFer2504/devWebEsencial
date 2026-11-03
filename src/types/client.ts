@@ -1,0 +1,16 @@
+export type {
+  ClientConfig,
+  ClientVariant,
+  ServiceItem,
+  AdvantageItem,
+  GalleryItem,
+  VideoItem,
+  EventItem,
+  PackageItem,
+  ArtistProfile,
+  SectionTitles,
+  SectionVisibility,
+  ContactInfo,
+  SeoConfig,
+  ColorPalette,
+} from "../schemas/client.schema";

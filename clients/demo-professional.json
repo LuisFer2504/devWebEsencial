@@ -1,0 +1,104 @@
+{
+  "id": "demo-professional",
+  "businessName": "Alva & Asociados",
+  "tagline": "Asesoría contable, tributaria y laboral para empresas en Perú",
+  "variant": "professional",
+  "colors": {
+    "primary": "#1e3a8a",
+    "primaryHover": "#1d4ed8",
+    "accent": "#0d9488",
+    "neutralBg": "#f8fafc"
+  },
+  "hero": {
+    "badge": "Más de 12 años asesorando PYMES en Perú",
+    "title": "Tranquilidad contable y tributaria para hacer crecer tu empresa",
+    "description": "Evita multas ante SUNAT, optimiza tus impuestos y formaliza tu negocio con un equipo de contadores colegiados comprometidos con tus metas.",
+    "ctaPrimary": {
+      "text": "Solicitar asesoría inicial",
+      "link": "#contacto"
+    },
+    "ctaSecondary": {
+      "text": "Ver nuestros servicios",
+      "link": "#servicios"
+    }
+  },
+  "about": {
+    "title": "Socios estratégicos para el crecimiento de tu negocio",
+    "description": "En Alva & Asociados brindamos soporte contable, tributario y financiero integral para emprendedores y empresas peruanas. Nos enfocamos en mantener tu empresa en regla con la SUNAT, optimizar costos y darte reportes claros para la toma de decisiones.",
+    "highlights": [
+      "Equipo de Contadores Públicos Colegiados (CCPL)",
+      "Atención personalizada con informes mensuales comprensibles",
+      "Especialistas en regímenes tributarios MYPE, Especial y General"
+    ]
+  },
+  "services": [
+    {
+      "id": "contabilidad-mensual",
+      "title": "Gestión Contable y Declaraciones SUNAT",
+      "description": "Elaboración de libros electrónicos (SIRE), liquidación de impuestos IGV-Renta, declaraciones mensuales y anuales sin retrasos ni contingencias.",
+      "badge": "Más solicitado"
+    },
+    {
+      "id": "asesoria-laboral",
+      "title": "Planillas y Asesoría Laboral (PLAME)",
+      "description": "Cálculo de planillas, gratificaciones, CTS, liquidaciones laborales, alta de trabajadores en T-Registro y cumplimiento ante SUNAFIL.",
+      "badge": "Empresas"
+    },
+    {
+      "id": "constitucion-empresas",
+      "title": "Constitución y Formalización de Empresas",
+      "description": "Asesoría en elección del tipo societario (SAC, EIRL, SRL), búsqueda y reserva de nombre, elaboración de minuta y trámite de RUC.",
+      "badge": "Emprendedores"
+    },
+    {
+      "id": "auditoria-tributaria",
+      "title": "Diagnóstico y Blindaje Tributario",
+      "description": "Revisión preventiva de inconsistencias fiscales, atención de cartas inductivas, fiscalizaciones de SUNAT y regularización de deuda tributaria."
+    }
+  ],
+  "advantages": [
+    {
+      "title": "Cero multas y fiscalizaciones",
+      "description": "Monitoreo permanente de tus obligaciones tributarias y laborales para prevenir sanciones."
+    },
+    {
+      "title": "Reportes financieros claros",
+      "description": "Explicamos los números de tu negocio en lenguaje sencillo y práctico, sin tecnicismos innecesarios."
+    },
+    {
+      "title": "Disponibilidad y respuesta rápida",
+      "description": "Comunicación directa por WhatsApp y correo para resolver dudas urgentes cuando lo necesites."
+    },
+    {
+      "title": "Tarifas transparentes adaptadas a tu volumen",
+      "description": "Planes mensuales sin costos ocultos, ajustados al tamaño y régimen de tu negocio."
+    }
+  ],
+  "contact": {
+    "whatsapp": "+51987654321",
+    "whatsappDefaultMessage": "Hola Alva & Asociados, quisiera coordinar una consulta contable para mi empresa.",
+    "phone": "+51 1 445 6789",
+    "email": "contacto@estudioalva.pe",
+    "address": "Av. José Pardo 601, Oficina 804, Miraflores",
+    "city": "Lima, Perú",
+    "googleMapsUrl": "https://maps.google.com/?q=Miraflores+Lima+Peru",
+    "schedule": [
+      "Lunes a Viernes: 8:30 AM - 6:00 PM",
+      "Sábados: 9:00 AM - 1:00 PM"
+    ],
+    "socialLinks": {
+      "linkedin": "https://www.linkedin.com",
+      "facebook": "https://www.facebook.com"
+    }
+  },
+  "seo": {
+    "title": "Alva & Asociados | Estudio Contable y Tributario en Lima",
+    "description": "Asesoría contable, declaraciones SUNAT, planillas y formalización de empresas en Lima, Perú. Contadores colegiados para PYMES.",
+    "keywords": [
+      "estudio contable lima",
+      "asesoria tributaria sunat",
+      "constitucion de empresas peru",
+      "contabilidad pymes miraflores"
+    ]
+  }
+}

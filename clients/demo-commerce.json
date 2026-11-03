@@ -1,0 +1,107 @@
+{
+  "id": "demo-commerce",
+  "businessName": "Ferretería El Maestro",
+  "tagline": "Materiales de construcción, herramientas y acabados con entrega rápida",
+  "variant": "commerce",
+  "colors": {
+    "primary": "#ea580c",
+    "primaryHover": "#c2410c",
+    "accent": "#f59e0b",
+    "neutralBg": "#fff7ed"
+  },
+  "hero": {
+    "badge": "Envíos en el día a toda Lima Este",
+    "title": "Todo para tu obra y remodelación al mejor precio de la zona",
+    "description": "Ferretería mayorista y minorista. Cotiza al instante por WhatsApp, aceptamos Yape, Plin y todas las tarjetas. Despacho directo a tu puerta u obra.",
+    "ctaPrimary": {
+      "text": "Pedir catálogo por WhatsApp",
+      "link": "#servicios"
+    },
+    "ctaSecondary": {
+      "text": "Ubicación de tienda",
+      "link": "#contacto"
+    }
+  },
+  "about": {
+    "title": "Más de 15 años abasteciendo a maestros y familias",
+    "description": "En Ferretería El Maestro ofrecemos asesoría técnica real para tus proyectos de construcción, gasfitería, electricidad y acabados. Trabajamos con marcas líderes y garantizamos el mejor rendimiento para tu presupuesto.",
+    "highlights": [
+      "Venta por mayor y menor con precios de distribuidor",
+      "Asesoría técnica para calcular cantidades exactas de material",
+      "Flota propia para entrega rápida en obra sin demoras"
+    ]
+  },
+  "services": [
+    {
+      "id": "cemento-agregados",
+      "title": "Cemento, Fierro y Agregados",
+      "description": "Cemento Sol, Quisqueya, fierro Corrugado Arequipa, arena gruesa, fina y piedra chancada por bolsas o m3.",
+      "price": "Cotización según volumen",
+      "badge": "Más vendido"
+    },
+    {
+      "id": "electricidad-gasfiteria",
+      "title": "Electricidad y Gasfitería",
+      "description": "Tuberías PVC Pavco, cables Indeco originales, llaves térmicas, tomacorrientes y accesorios sanitarios.",
+      "price": "Precios por mayor",
+      "badge": "Stock permanente"
+    },
+    {
+      "id": "herramientas-maquinaria",
+      "title": "Herramientas Eléctricas y Manuales",
+      "description": "Amoladoras, taladros percutores, rotomartillos Bosch, Dewalt y Total con garantía oficial de fábrica.",
+      "badge": "Garantía oficial"
+    },
+    {
+      "id": "pinturas-acabados",
+      "title": "Pinturas, Impermeabilizantes y Acabados",
+      "description": "Látex Vencedor, CPP, pinturas antihumedad, selladores, pastas murales y accesorios de aplicación.",
+      "price": "Desde S/ 28 galón"
+    }
+  ],
+  "advantages": [
+    {
+      "title": "Despacho rápido a obra",
+      "description": "Recibe tus pedidos en menos de 3 horas dentro de la zona o programa tu entrega para primera hora de la mañana."
+    },
+    {
+      "title": "Marcas 100% originales",
+      "description": "No arriesgues la seguridad de tu construcción con materiales adulterados. Todos nuestros productos cuentan con certificado de calidad."
+    },
+    {
+      "title": "Múltiples medios de pago",
+      "description": "Paga al recibir con Yape, Plin, transferencia bancaria o tarjeta de crédito sin recargos sorpresa."
+    },
+    {
+      "title": "Atención rápida por WhatsApp",
+      "description": "Envíanos tu lista escrita o en foto y te respondemos con tu presupuesto detallado en minutos."
+    }
+  ],
+  "contact": {
+    "whatsapp": "+51912345678",
+    "whatsappDefaultMessage": "Hola Ferretería El Maestro, quisiera cotizar la siguiente lista de materiales:",
+    "phone": "+51 1 388 9012",
+    "email": "ventas@ferreteriaelmaestro.pe",
+    "address": "Av. Próceres de la Independencia 2450, San Juan de Lurigancho",
+    "city": "Lima, Perú",
+    "googleMapsUrl": "https://maps.google.com/?q=San+Juan+de+Lurigancho+Lima+Peru",
+    "schedule": [
+      "Lunes a Sábado: 7:00 AM - 7:30 PM",
+      "Domingos: 8:00 AM - 2:00 PM"
+    ],
+    "socialLinks": {
+      "facebook": "https://www.facebook.com",
+      "tiktok": "https://www.tiktok.com"
+    }
+  },
+  "seo": {
+    "title": "Ferretería El Maestro | Materiales y Herramientas en San Juan de Lurigancho",
+    "description": "Venta de cemento, fierro, herramientas y pinturas en San Juan de Lurigancho. Envíos a obra en el día. Pide tu cotización por WhatsApp.",
+    "keywords": [
+      "ferreteria san juan de lurigancho",
+      "cemento sol precio lima",
+      "fierro arequipa por mayor",
+      "materiales de construccion lima este"
+    ]
+  }
+}

@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador y Editor Visual — Web Esencial</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .btn-icon { display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: 0.375rem; transition: all 0.15s; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
+  
+  <!-- Header -->
+  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2.5">
+          <span class="inline-block h-3 w-3 rounded-full bg-emerald-400 animate-pulse"></span>
+          <h1 class="text-lg font-bold tracking-tight">Editor Visual — Web Esencial</h1>
+          <span class="rounded bg-slate-800 px-2 py-0.5 text-[11px] text-slate-300 font-mono">v2.0 Multi-Plantilla</span>
+        </div>
+        <p class="text-xs text-slate-400 mt-0.5">Personalización 100% editable sin textos fijos para negocios y artistas</p>
+      </div>
+
+      <!-- Selector de plantilla existente para cargar -->
+      <div class="flex items-center gap-2">
+        <label for="existingClients" class="text-xs text-slate-300 whitespace-nowrap">Cliente:</label>
+        <select id="existingClients" class="bg-slate-800 text-white text-xs rounded-lg px-3 py-2 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <option value="">-- Cargar cliente --</option>
+        </select>
+        <button id="btnLoadClient" type="button" class="bg-slate-700 hover:bg-slate-600 text-xs px-3 py-2 rounded-lg font-medium transition-colors">
+          Cargar
+        </button>
+        <button id="btnNewClient" type="button" class="bg-emerald-600 hover:bg-emerald-500 text-xs px-3 py-2 rounded-lg font-bold transition-colors">
+          + Nuevo
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      
+      <!-- Tabs Navigation -->
+      <nav class="flex border-b border-slate-200 overflow-x-auto bg-slate-50 px-3 pt-2 text-xs sm:text-sm font-medium">
+        <button class="tab-btn px-3.5 py-3 border-b-2 border-emerald-600 text-emerald-700 font-bold whitespace-nowrap" data-tab="tab-identity">
+          1. Identidad & Rubro
+        </button>
+        <button class="tab-btn px-3.5 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 whitespace-nowrap" data-tab="tab-hero">
+          2. Portada & Hero
+        </button>
+        <button class="tab-btn px-3.5 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 whitespace-nowrap" data-tab="tab-about">
+          3. Biografía / Nosotros
+        </button>
+        <button class="tab-btn px-3.5 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 whitespace-nowrap" data-tab="tab-services">
+          4. Servicios / Paquetes
+        </button>
+        <button class="tab-btn px-3.5 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 whitespace-nowrap" data-tab="tab-multimedia">
+          5. Fotos & Videos (Artistas)
+        </button>
+        <button class="tab-btn px-3.5 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 whitespace-nowrap" data-tab="tab-events">
+          6. Presentaciones (Artistas)
+        </button>
+        <button class="tab-btn px-3.5 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 whitespace-nowrap" data-tab="tab-advantages">
+          7. Ventajas & Diferenciales
+        </button>
+        <button class="tab-btn px-3.5 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 whitespace-nowrap" data-tab="tab-contact">
+          8. Contacto & Horarios
+        </button>
+        <button class="tab-btn px-3.5 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 whitespace-nowrap" data-tab="tab-visibility">
+          9. Títulos & Visibilidad
+        </button>
+        <button class="tab-btn px-3.5 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 whitespace-nowrap" data-tab="tab-review">
+          10. SEO, Vista Previa & Guardar
+        </button>
+      </nav>
+
+      <form id="generatorForm" class="p-6 sm:p-8">
+        
+        <!-- Tab 1: Identidad & Rubro -->
+        <div id="tab-identity" class="tab-content active space-y-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Identidad de Marca y Rubro de Plantilla</h2>
+            <p class="text-xs text-slate-500">Configura el identificador único del cliente, su nombre comercial y el estilo visual.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="clientId" class="block text-xs font-bold uppercase tracking-wider text-slate-700">ID del Cliente (Slug) *</label>
+              <input type="text" id="clientId" name="id" required placeholder="ej: tyler-kealey o clinica-dental" class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200">
+              <p class="text-xs text-slate-500 mt-1">Solo minúsculas, números y guiones. Será el nombre de archivo en <code>clients/[id].json</code>.</p>
+            </div>
+
+            <div>
+              <label for="businessName" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Nombre Comercial o Nombre Artístico *</label>
+              <input type="text" id="businessName" name="businessName" required placeholder="ej: Tyler Kealey / Alva & Asociados" class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200">
+            </div>
+
+            <div class="md:col-span-2">
+              <label for="tagline" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Lema / Subtítulo Breve *</label>
+              <input type="text" id="tagline" name="tagline" required placeholder="ej: Pianista, cantautor y espectáculo en vivo para eventos" class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200">
+            </div>
+
+            <div>
+              <label for="logoUrl" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Logo URL (Opcional)</label>
+              <input type="text" id="logoUrl" name="logoUrl" placeholder="https://ejemplo.com/logo.png" class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm">
+            </div>
+
+            <!-- Selector de Variante Visual -->
+            <div class="md:col-span-2">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-3">Variante Visual por Rubro *</label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <label class="variant-card cursor-pointer rounded-xl border-2 border-slate-200 p-4 transition-all hover:border-slate-300">
+                  <input type="radio" name="variant" value="artist" checked class="sr-only">
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold text-slate-900 text-sm">Artist (Música)</span>
+                    <span class="rounded bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5">Nuevo</span>
+                  </div>
+                  <div class="text-xs text-slate-500 mt-1.5">Cantantes, pianistas, bandas y shows en vivo. Portada escénica, videos, fechas y paquetes.</div>
+                </label>
+
+                <label class="variant-card cursor-pointer rounded-xl border-2 border-slate-200 p-4 transition-all hover:border-slate-300">
+                  <input type="radio" name="variant" value="professional" class="sr-only">
+                  <div class="font-bold text-slate-900 text-sm">Professional</div>
+                  <div class="text-xs text-slate-500 mt-1.5">Consultorías, contabilidad, estudios jurídicos, clínicas y empresas de servicios corporativos.</div>
+                </label>
+
+                <label class="variant-card cursor-pointer rounded-xl border-2 border-slate-200 p-4 transition-all hover:border-slate-300">
+                  <input type="radio" name="variant" value="commerce" class="sr-only">
+                  <div class="font-bold text-slate-900 text-sm">Commerce</div>
+                  <div class="text-xs text-slate-500 mt-1.5">Ferreterías, tiendas locales, talleres y negocios de venta rápida por WhatsApp.</div>
+                </label>
+
+                <label class="variant-card cursor-pointer rounded-xl border-2 border-slate-200 p-4 transition-all hover:border-slate-300">
+                  <input type="radio" name="variant" value="beauty" class="sr-only">
+                  <div class="font-bold text-slate-900 text-sm">Beauty</div>
+                  <div class="text-xs text-slate-500 mt-1.5">Salones de belleza, spas, centros de estética, cuidado facial y reservas.</div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Paleta de Colores -->
+            <div>
+              <label for="primaryColor" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Color Primario *</label>
+              <div class="flex items-center gap-3 mt-1.5">
+                <input type="color" id="primaryColorPicker" value="#d97706" class="h-10 w-12 rounded cursor-pointer border border-slate-300">
+                <input type="text" id="primaryColor" name="colors.primary" value="#d97706" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono">
+              </div>
+            </div>
+
+            <div>
+              <label for="primaryHoverColor" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Color Primario (Hover)</label>
+              <div class="flex items-center gap-3 mt-1.5">
+                <input type="color" id="primaryHoverColorPicker" value="#b45309" class="h-10 w-12 rounded cursor-pointer border border-slate-300">
+                <input type="text" id="primaryHoverColor" name="colors.primaryHover" value="#b45309" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Portada & Hero -->
+        <div id="tab-hero" class="tab-content space-y-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Configuración de Portada & Hero</h2>
+            <p class="text-xs text-slate-500">Elementos visuales de impacto inicial de la página.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="md:col-span-2">
+              <label for="heroBadge" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Insignia / Badge Superior (Opcional)</label>
+              <input type="text" id="heroBadge" name="hero.badge" placeholder="ej: Piano & Voz en Vivo • Dueling Pianos" class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm">
+            </div>
+
+            <div class="md:col-span-2">
+              <label for="heroTitle" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Título Principal de Portada *</label>
+              <input type="text" id="heroTitle" name="hero.title" required placeholder="ej: Música en vivo que transforma cada evento en una experiencia inolvidable" class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm">
+            </div>
+
+            <div class="md:col-span-2">
+              <label for="heroDesc" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Descripción de Portada *</label>
+              <textarea id="heroDesc" name="hero.description" rows="3" required placeholder="ej: Repertorio versátil que combina clásicos del rock, pop y composiciones originales..." class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm"></textarea>
+            </div>
+
+            <div class="md:col-span-2">
+              <label for="heroImage" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Imagen de Portada / Fondo Escénico (URL)</label>
+              <input type="text" id="heroImage" name="hero.heroImage" placeholder="https://images.unsplash.com/photo-..." class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm font-mono">
+              <p class="text-xs text-slate-500 mt-1">URL directa a imagen JPG, PNG o WebP. Se adapta estéticamente al fondo de la portada.</p>
+            </div>
+
+            <div>
+              <label for="heroCtaText" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Botón Primario: Texto *</label>
+              <input type="text" id="heroCtaText" name="hero.ctaPrimary.text" value="Cotizar Presentación en Vivo" required class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm">
+            </div>
+
+            <div>
+              <label for="heroCtaLink" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Botón Primario: Enlace *</label>
+              <input type="text" id="heroCtaLink" name="hero.ctaPrimary.link" value="#contacto" required class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm font-mono">
+            </div>
+
+            <div>
+              <label for="heroCtaSecText" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Botón Secundario: Texto (Opcional)</label>
+              <input type="text" id="heroCtaSecText" name="hero.ctaSecondary.text" placeholder="ej: Ver Videos en Escena" class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm">
+            </div>
+
+            <div>
+              <label for="heroCtaSecLink" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Botón Secundario: Enlace</label>
+              <input type="text" id="heroCtaSecLink" name="hero.ctaSecondary.link" placeholder="ej: #musica" class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm font-mono">
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Biografía / Nosotros -->
+        <div id="tab-about" class="tab-content space-y-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Biografía del Artista o Sobre la Empresa</h2>
+            <p class="text-xs text-slate-500">Permite presentar la historia, filosofía y pilares destacados propios del cliente.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Campos específicos para Artistas -->
+            <div id="artistProfileFields" class="md:col-span-2 space-y-4 rounded-xl bg-amber-50/60 p-4 border border-amber-200">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-amber-900">Datos Específicos del Artista</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="artGenre" class="block text-xs font-semibold text-slate-700">Género / Estilo Musical</label>
+                  <input type="text" id="artGenre" placeholder="ej: Singer-Songwriter • Piano Rock & Blues" class="mt-1 w-full rounded-lg border border-slate-300 p-2 text-xs">
+                </div>
+                <div>
+                  <label for="artZone" class="block text-xs font-semibold text-slate-700">Zona de Contratación / Giras</label>
+                  <input type="text" id="artZone" placeholder="ej: Lima, Provincias e Internacional" class="mt-1 w-full rounded-lg border border-slate-300 p-2 text-xs">
+                </div>
+                <div class="sm:col-span-2">
+                  <label for="artPortrait" class="block text-xs font-semibold text-slate-700">Fotografía Retrato de Biografía (URL)</label>
+                  <input type="text" id="artPortrait" placeholder="https://ejemplo.com/retrato.jpg" class="mt-1 w-full rounded-lg border border-slate-300 p-2 text-xs font-mono">
+                </div>
+                <div class="sm:col-span-2">
+                  <label for="artQuote" class="block text-xs font-semibold text-slate-700">Frase de Presentación / Cita Personal</label>
+                  <input type="text" id="artQuote" placeholder="ej: La música en vivo se trata de los momentos inolvidables que creamos juntos..." class="mt-1 w-full rounded-lg border border-slate-300 p-2 text-xs">
+                </div>
+              </div>
+            </div>
+
+            <div class="md:col-span-2">
+              <label for="aboutTitle" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Título de la Sección *</label>
+              <input type="text" id="aboutTitle" name="about.title" required placeholder="ej: Sobre Tyler Kealey / Nuestra Historia" class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm">
+            </div>
+
+            <div class="md:col-span-2">
+              <label for="aboutDesc" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Texto Principal / Biografía *</label>
+              <textarea id="aboutDesc" name="about.description" rows="5" required placeholder="Describe la trayectoria, propuesta musical o propuesta de valor..." class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm"></textarea>
+            </div>
+
+            <!-- Lista de Pilares / Destacados / Logros Dinámicos -->
+            <div class="md:col-span-2 pt-4 border-t border-slate-200">
+              <div class="flex items-center justify-between mb-3">
+                <div>
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800">Pilares Destacados / Logros del Cliente</h3>
+                  <p class="text-xs text-slate-500">Puntos clave propios del cliente. Se pueden agregar, reordenar o eliminar.</p>
+                </div>
+                <button type="button" id="btnAddHighlight" class="bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold">
+                  + Agregar Punto
+                </button>
+              </div>
+              <div id="highlightsContainer" class="space-y-2"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: Servicios / Paquetes de Contratación -->
+        <div id="tab-services" class="tab-content space-y-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Servicios o Paquetes de Contratación</h2>
+            <p class="text-xs text-slate-500">Configura la oferta del negocio o los formatos de presentación musical para eventos.</p>
+          </div>
+
+          <!-- Servicios Tradicionales -->
+          <div id="servicesSection">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800">Servicios Clave</h3>
+              <button type="button" id="btnAddService" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold">
+                + Agregar Servicio
+              </button>
+            </div>
+            <div id="servicesContainer" class="space-y-3"></div>
+          </div>
+
+          <!-- Paquetes Artísticos Específicos -->
+          <div id="packagesSection" class="pt-6 border-t border-slate-200">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-amber-900">Paquetes de Contratación Musical</h3>
+                <p class="text-xs text-slate-500">Formatos para bodas, conciertos, corporativos o acústicos.</p>
+              </div>
+              <button type="button" id="btnAddPackage" class="bg-amber-600 hover:bg-amber-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold">
+                + Agregar Paquete
+              </button>
+            </div>
+            <div id="packagesContainer" class="space-y-4"></div>
+          </div>
+        </div>
+
+        <!-- Tab 5: Fotos & Videos (Artistas) -->
+        <div id="tab-multimedia" class="tab-content space-y-8">
+          <!-- Videos -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h2 class="text-base font-bold text-slate-900">Videos y Música en Escena</h2>
+                <p class="text-xs text-slate-500">Ingresa enlaces de YouTube o Vimeo para reproductores responsivos.</p>
+              </div>
+              <button type="button" id="btnAddVideo" class="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold">
+                + Agregar Video
+              </button>
+            </div>
+            <div id="videosContainer" class="space-y-3"></div>
+          </div>
+
+          <!-- Galería de Fotos -->
+          <div class="pt-6 border-t border-slate-200">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h2 class="text-base font-bold text-slate-900">Galería de Fotografías</h2>
+                <p class="text-xs text-slate-500">Fotos de conciertos, estudio o presentaciones.</p>
+              </div>
+              <button type="button" id="btnAddGallery" class="bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold">
+                + Agregar Foto
+              </button>
+            </div>
+            <div id="galleryContainer" class="space-y-3"></div>
+          </div>
+        </div>
+
+        <!-- Tab 6: Presentaciones (Artistas) -->
+        <div id="tab-events" class="tab-content space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Calendario de Presentaciones & Conciertos</h2>
+              <p class="text-xs text-slate-500">Fechas de shows en vivo. Si no hay fechas, la sección se oculta automáticamente.</p>
+            </div>
+            <button type="button" id="btnAddEvent" class="bg-amber-600 hover:bg-amber-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold">
+              + Agregar Fecha
+            </button>
+          </div>
+          <div id="eventsContainer" class="space-y-3"></div>
+        </div>
+
+        <!-- Tab 7: Ventajas & Diferenciales -->
+        <div id="tab-advantages" class="tab-content space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Ventajas y Diferenciales</h2>
+              <p class="text-xs text-slate-500">Razones por las cuales contratar o elegir al negocio o artista.</p>
+            </div>
+            <button type="button" id="btnAddAdvantage" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold">
+              + Agregar Ventaja
+            </button>
+          </div>
+          <div id="advantagesContainer" class="space-y-3"></div>
+        </div>
+
+        <!-- Tab 8: Contacto & Horarios -->
+        <div id="tab-contact" class="tab-content space-y-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Canales de Contacto, Redes y Horarios</h2>
+            <p class="text-xs text-slate-500">Los datos vacíos se ocultan automáticamente sin dejar espacios en blanco.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="contactWa" class="block text-xs font-bold uppercase tracking-wider text-slate-700">WhatsApp Oficial</label>
+              <input type="text" id="contactWa" name="contact.whatsapp" placeholder="+51999888777" class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm font-mono">
+            </div>
+
+            <div>
+              <label for="contactWaMsg" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Mensaje Predeterminado de WhatsApp</label>
+              <input type="text" id="contactWaMsg" name="contact.whatsappDefaultMessage" placeholder="Hola, quisiera consultar sobre..." class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm">
+            </div>
+
+            <div>
+              <label for="contactPhone" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Teléfono / Management</label>
+              <input type="text" id="contactPhone" name="contact.phone" placeholder="+51 987 654 321" class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm">
+            </div>
+
+            <div>
+              <label for="contactEmail" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Correo Electrónico</label>
+              <input type="email" id="contactEmail" name="contact.email" placeholder="booking@artista.com" class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm">
+            </div>
+
+            <div>
+              <label for="contactCity" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Ciudad / Cobertura</label>
+              <input type="text" id="contactCity" name="contact.city" placeholder="Lima, Perú / Giras Internacionales" class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm">
+            </div>
+
+            <div>
+              <label for="contactAddress" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Dirección Física (Opcional)</label>
+              <input type="text" id="contactAddress" name="contact.address" placeholder="Av. Principal 123" class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm">
+            </div>
+
+            <!-- Horarios de Atención Editables -->
+            <div class="md:col-span-2 pt-4 border-t border-slate-200">
+              <div class="flex items-center justify-between mb-2">
+                <div>
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800">Horarios de Atención (Completamente Editables)</h3>
+                  <p class="text-xs text-slate-500">Agrega, edita o elimina horarios. Si no aplican para este cliente, déjalos vacíos.</p>
+                </div>
+                <button type="button" id="btnAddSchedule" class="bg-amber-600 hover:bg-amber-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold">
+                  + Agregar Horario
+                </button>
+              </div>
+              <div id="scheduleContainer" class="space-y-2"></div>
+            </div>
+
+            <!-- Redes y Plataformas -->
+            <div class="md:col-span-2 pt-4 border-t border-slate-200">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 mb-3">Redes Sociales & Plataformas Musicales</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-600 mb-1">Spotify URL</label>
+                  <input type="url" id="socSpotify" placeholder="https://open.spotify.com/..." class="w-full rounded border border-slate-300 p-2 text-xs font-mono">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-600 mb-1">YouTube URL</label>
+                  <input type="url" id="socYouTube" placeholder="https://youtube.com/..." class="w-full rounded border border-slate-300 p-2 text-xs font-mono">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-600 mb-1">Instagram URL</label>
+                  <input type="url" id="socIg" placeholder="https://instagram.com/..." class="w-full rounded border border-slate-300 p-2 text-xs font-mono">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-600 mb-1">TikTok URL</label>
+                  <input type="url" id="socTk" placeholder="https://tiktok.com/@..." class="w-full rounded border border-slate-300 p-2 text-xs font-mono">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-600 mb-1">Facebook URL</label>
+                  <input type="url" id="socFb" placeholder="https://facebook.com/..." class="w-full rounded border border-slate-300 p-2 text-xs font-mono">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-600 mb-1">Apple Music URL</label>
+                  <input type="url" id="socApple" placeholder="https://music.apple.com/..." class="w-full rounded border border-slate-300 p-2 text-xs font-mono">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-600 mb-1">SoundCloud URL</label>
+                  <input type="url" id="socSoundCloud" placeholder="https://soundcloud.com/..." class="w-full rounded border border-slate-300 p-2 text-xs font-mono">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-600 mb-1">LinkedIn URL</label>
+                  <input type="url" id="socLk" placeholder="https://linkedin.com/..." class="w-full rounded border border-slate-300 p-2 text-xs font-mono">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 9: Títulos & Visibilidad -->
+        <div id="tab-visibility" class="tab-content space-y-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Títulos Personalizados y Control de Secciones</h2>
+            <p class="text-xs text-slate-500">Personaliza los títulos y descripciones de cada sección y activa o apaga secciones opcionales.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Interruptores de visibilidad -->
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800">Visibilidad de Secciones</h3>
+              <div class="space-y-2 text-xs">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="visAbout" checked class="h-4 w-4 rounded text-emerald-600">
+                  <span>Sobre Nosotros / Biografía</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="visServices" checked class="h-4 w-4 rounded text-emerald-600">
+                  <span>Servicios Clave</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="visPackages" checked class="h-4 w-4 rounded text-emerald-600">
+                  <span>Paquetes de Contratación (Artistas)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="visVideos" checked class="h-4 w-4 rounded text-emerald-600">
+                  <span>Música & Videos (Artistas)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="visGallery" checked class="h-4 w-4 rounded text-emerald-600">
+                  <span>Galería de Fotografías (Artistas)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="visEvents" checked class="h-4 w-4 rounded text-emerald-600">
+                  <span>Próximas Presentaciones (Artistas)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="visAdvantages" checked class="h-4 w-4 rounded text-emerald-600">
+                  <span>Ventajas & Diferenciales</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="visSchedule" checked class="h-4 w-4 rounded text-emerald-600">
+                  <span>Horarios de Atención</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="visContact" checked class="h-4 w-4 rounded text-emerald-600">
+                  <span>Sección de Contacto</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Títulos Personalizados -->
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800">Títulos y Subtítulos de Secciones</h3>
+              <div class="space-y-3 text-xs">
+                <div>
+                  <label class="block text-slate-600 font-semibold mb-1">Título de Servicios / Paquetes</label>
+                  <input type="text" id="titleServices" placeholder="ej: Paquetes de Contratación / Servicios Especializados" class="w-full rounded border border-slate-300 p-2 text-xs">
+                </div>
+                <div>
+                  <label class="block text-slate-600 font-semibold mb-1">Título de Ventajas</label>
+                  <input type="text" id="titleAdvantages" placeholder="ej: Diferenciales Clave / ¿Por qué elegirnos?" class="w-full rounded border border-slate-300 p-2 text-xs">
+                </div>
+                <div>
+                  <label class="block text-slate-600 font-semibold mb-1">Título de Contacto</label>
+                  <input type="text" id="titleContact" placeholder="ej: Contratar en Vivo / Comunícate con Nosotros" class="w-full rounded border border-slate-300 p-2 text-xs">
+                </div>
+                <div>
+                  <label class="block text-slate-600 font-semibold mb-1">Título de Videos</label>
+                  <input type="text" id="titleVideos" placeholder="ej: Música & Videos en Vivo" class="w-full rounded border border-slate-300 p-2 text-xs">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 10: SEO, Vista Previa & Guardar -->
+        <div id="tab-review" class="tab-content space-y-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">SEO, Vista Previa & Guardado de Archivo</h2>
+            <p class="text-xs text-slate-500">Configura los metadatos de búsqueda, revisa el resumen visual y guarda en <code>clients/[id].json</code>.</p>
+          </div>
+
+          <!-- SEO -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="md:col-span-2">
+              <div class="flex justify-between items-center">
+                <label for="seoTitle" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Título SEO (Title Tag) *</label>
+                <span id="titleCounter" class="text-xs text-slate-400">0 / 60</span>
+              </div>
+              <input type="text" id="seoTitle" name="seo.title" required placeholder="ej: Tyler Kealey | Músico y Pianista en Vivo para Eventos" class="mt-1 w-full rounded-lg border border-slate-300 p-2.5 text-xs">
+            </div>
+
+            <div class="md:col-span-2">
+              <div class="flex justify-between items-center">
+                <label for="seoDesc" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Meta Descripción SEO *</label>
+                <span id="descCounter" class="text-xs text-slate-400">0 / 160</span>
+              </div>
+              <textarea id="seoDesc" name="seo.description" rows="2" required placeholder="ej: Contrata presentaciones en vivo para bodas, conciertos y festivales..." class="mt-1 w-full rounded-lg border border-slate-300 p-2.5 text-xs"></textarea>
+            </div>
+
+            <div class="md:col-span-2">
+              <label for="seoKeywords" class="block text-xs font-bold uppercase tracking-wider text-slate-700">Palabras Clave (Separadas por comas)</label>
+              <input type="text" id="seoKeywords" placeholder="musica en vivo, bodas, pianista, cantautor" class="mt-1 w-full rounded-lg border border-slate-300 p-2.5 text-xs">
+            </div>
+          </div>
+
+          <!-- Alerta de Validación -->
+          <div id="validationAlert" class="hidden rounded-xl p-4 text-xs font-medium"></div>
+
+          <!-- Resumen de Vista Previa -->
+          <div class="rounded-xl border border-slate-300 bg-slate-50 p-4 space-y-3">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800">Resumen Visual de la Configuración</h3>
+            <div id="livePreviewSummary" class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs"></div>
+          </div>
+
+          <!-- Visor JSON -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-bold text-slate-700 uppercase">Estructura JSON Final</span>
+              <span class="text-[11px] text-slate-400 font-mono">clients/[id].json</span>
+            </div>
+            <div class="rounded-xl border border-slate-800 bg-slate-950 p-4 text-emerald-400 font-mono text-xs overflow-auto max-h-72">
+              <pre id="jsonPreview">{}</pre>
+            </div>
+          </div>
+
+          <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+              <input type="checkbox" id="chkOverwrite" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+              <span>Sobrescribir si el archivo ya existe</span>
+            </label>
+
+            <button type="button" id="btnSaveClient" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-8 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-md hover:bg-emerald-700 transition-colors">
+              Guardar Configuración del Cliente
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // Estado y Datos del Cliente
+    let currentConfig = {
+      id: "nuevo-cliente",
+      businessName: "",
+      tagline: "",
+      variant: "artist",
+      colors: { primary: "#d97706", primaryHover: "#b45309" },
+      hero: { title: "", description: "", ctaPrimary: { text: "Contactar", link: "#contacto" } },
+      about: { title: "", description: "", highlights: [] },
+      services: [],
+      packages: [],
+      advantages: [],
+      gallery: [],
+      videos: [],
+      events: [],
+      artistProfile: {},
+      contact: { schedule: [] },
+      seo: { title: "", description: "" },
+      sectionTitles: {},
+      sectionVisibility: {
+        about: true, services: true, packages: true, videos: true, gallery: true, events: true, advantages: true, schedule: true, contact: true
+      }
+    };
+
+    // Navegación por pestañas
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = btn.getAttribute('data-tab');
+        
+        tabButtons.forEach(b => {
+          b.classList.remove('border-emerald-600', 'text-emerald-700', 'font-bold');
+          b.classList.add('border-transparent', 'text-slate-600');
+        });
+        btn.classList.add('border-emerald-600', 'text-emerald-700', 'font-bold');
+        btn.classList.remove('border-transparent', 'text-slate-600');
+
+        tabContents.forEach(c => c.classList.remove('active'));
+        document.getElementById(targetId).classList.add('active');
+
+        if (targetId === 'tab-review') {
+          updateJsonPreview();
+        }
+      });
+    });
+
+    // Sincronización de color pickers
+    document.getElementById('primaryColorPicker').addEventListener('input', (e) => {
+      document.getElementById('primaryColor').value = e.target.value;
+    });
+    document.getElementById('primaryHoverColorPicker').addEventListener('input', (e) => {
+      document.getElementById('primaryHoverColor').value = e.target.value;
+    });
+
+    // Reordenar helper para cualquier lista
+    function moveItemInArray(arr, fromIndex, toIndex) {
+      if (toIndex < 0 || toIndex >= arr.length) return;
+      const item = arr.splice(fromIndex, 1)[0];
+      arr.splice(toIndex, 0, item);
+    }
+
+    // --- 1. GESTOR DE HIGHLIGHTS / PILARES ---
+    const highlightsContainer = document.getElementById('highlightsContainer');
+    function renderHighlights(list) {
+      highlightsContainer.innerHTML = '';
+      if (!list || list.length === 0) {
+        highlightsContainer.innerHTML = '<p class="text-xs text-slate-400 italic">No hay puntos destacados configurados para este cliente.</p>';
+        return;
+      }
+      list.forEach((hl, idx) => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200';
+        row.innerHTML = `
+          <button type="button" class="btn-icon bg-white hover:bg-slate-200 text-slate-600 btn-hl-up" data-index="${idx}" title="Subir">▲</button>
+          <button type="button" class="btn-icon bg-white hover:bg-slate-200 text-slate-600 btn-hl-down" data-index="${idx}" title="Bajar">▼</button>
+          <input type="text" value="${hl}" class="hl-input flex-1 rounded border border-slate-300 p-1.5 text-xs">
+          <button type="button" class="btn-icon bg-red-50 hover:bg-red-100 text-red-600 btn-hl-del" data-index="${idx}" title="Eliminar">✕</button>
+        `;
+        highlightsContainer.appendChild(row);
+      });
+
+      highlightsContainer.querySelectorAll('.hl-input').forEach((input, i) => {
+        input.addEventListener('input', (e) => { currentConfig.about.highlights[i] = e.target.value; });
+      });
+      highlightsContainer.querySelectorAll('.btn-hl-up').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const i = parseInt(btn.dataset.index, 10);
+          moveItemInArray(currentConfig.about.highlights, i, i - 1);
+          renderHighlights(currentConfig.about.highlights);
+        });
+      });
+      highlightsContainer.querySelectorAll('.btn-hl-down').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const i = parseInt(btn.dataset.index, 10);
+          moveItemInArray(currentConfig.about.highlights, i, i + 1);
+          renderHighlights(currentConfig.about.highlights);
+        });
+      });
+      highlightsContainer.querySelectorAll('.btn-hl-del').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const i = parseInt(btn.dataset.index, 10);
+          currentConfig.about.highlights.splice(i, 1);
+          renderHighlights(currentConfig.about.highlights);
+        });
+      });
+    }
+    document.getElementById('btnAddHighlight').addEventListener('click', () => {
+      if (!currentConfig.about.highlights) currentConfig.about.highlights = [];
+      currentConfig.about.highlights.push("");
+      renderHighlights(currentConfig.about.highlights);
+    });
+
+    // --- 2. GESTOR DE HORARIOS ---
+    const scheduleContainer = document.getElementById('scheduleContainer');
+    function renderSchedule(list) {
+      scheduleContainer.innerHTML = '';
+      if (!list || list.length === 0) {
+        scheduleContainer.innerHTML = '<p class="text-xs text-slate-400 italic">No hay horarios configurados. La sección no mostrará horarios.</p>';
+        return;
+      }
+      list.forEach((sch, idx) => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200';
+        row.innerHTML = `
+          <button type="button" class="btn-icon bg-white hover:bg-slate-200 text-slate-600 btn-sch-up" data-index="${idx}">▲</button>
+          <button type="button" class="btn-icon bg-white hover:bg-slate-200 text-slate-600 btn-sch-down" data-index="${idx}">▼</button>
+          <input type="text" value="${sch}" placeholder="ej: Lunes a Viernes: 9:00 AM - 6:00 PM" class="sch-input flex-1 rounded border border-slate-300 p-1.5 text-xs">
+          <button type="button" class="btn-icon bg-red-50 hover:bg-red-100 text-red-600 btn-sch-del" data-index="${idx}">✕</button>
+        `;
+        scheduleContainer.appendChild(row);
+      });
+
+      scheduleContainer.querySelectorAll('.sch-input').forEach((input, i) => {
+        input.addEventListener('input', (e) => { currentConfig.contact.schedule[i] = e.target.value; });
+      });
+      scheduleContainer.querySelectorAll('.btn-sch-up').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const i = parseInt(btn.dataset.index, 10);
+          moveItemInArray(currentConfig.contact.schedule, i, i - 1);
+          renderSchedule(currentConfig.contact.schedule);
+        });
+      });
+      scheduleContainer.querySelectorAll('.btn-sch-down').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const i = parseInt(btn.dataset.index, 10);
+          moveItemInArray(currentConfig.contact.schedule, i, i + 1);
+          renderSchedule(currentConfig.contact.schedule);
+        });
+      });
+      scheduleContainer.querySelectorAll('.btn-sch-del').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const i = parseInt(btn.dataset.index, 10);
+          currentConfig.contact.schedule.splice(i, 1);
+          renderSchedule(currentConfig.contact.schedule);
+        });
+      });
+    }
+    document.getElementById('btnAddSchedule').addEventListener('click', () => {
+      if (!currentConfig.contact.schedule) currentConfig.contact.schedule = [];
+      currentConfig.contact.schedule.push("Lunes a Viernes: 9:00 AM - 6:00 PM");
+      renderSchedule(currentConfig.contact.schedule);
+    });
+
+    // --- 3. GESTOR DE SERVICIOS TRADICIONALES ---
+    const servicesContainer = document.getElementById('servicesContainer');
+    function renderServices(servicesList) {
+      servicesContainer.innerHTML = '';
+      if (!servicesList || servicesList.length === 0) {
+        servicesContainer.innerHTML = '<p class="text-xs text-slate-400 italic">Sin servicios registrados.</p>';
+        return;
+      }
+      servicesList.forEach((s, idx) => {
+        const item = document.createElement('div');
+        item.className = 'rounded-xl border border-slate-200 bg-slate-50 p-3.5 space-y-2.5';
+        item.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <button type="button" class="btn-icon bg-white text-slate-600 btn-srv-up" data-index="${idx}">▲</button>
+              <button type="button" class="btn-icon bg-white text-slate-600 btn-srv-down" data-index="${idx}">▼</button>
+              <span class="text-xs font-bold text-slate-700 uppercase">Servicio #${idx + 1}</span>
+            </div>
+            <button type="button" class="text-xs text-red-600 font-bold btn-srv-del" data-index="${idx}">Eliminar</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div><input type="text" placeholder="ID (slug) *" value="${s.id || ''}" class="srv-id w-full rounded border border-slate-300 p-1.5 text-xs"></div>
+            <div class="sm:col-span-2"><input type="text" placeholder="Título *" value="${s.title || ''}" class="srv-title w-full rounded border border-slate-300 p-1.5 text-xs font-bold"></div>
+            <div class="sm:col-span-3"><textarea placeholder="Descripción *" class="srv-desc w-full rounded border border-slate-300 p-1.5 text-xs" rows="2">${s.description || ''}</textarea></div>
+            <div><input type="text" placeholder="Precio (ej: S/ 150)" value="${s.price || ''}" class="srv-price w-full rounded border border-slate-300 p-1.5 text-xs"></div>
+            <div><input type="text" placeholder="Duración (ej: 45 min)" value="${s.duration || ''}" class="srv-duration w-full rounded border border-slate-300 p-1.5 text-xs"></div>
+            <div><input type="text" placeholder="Badge (ej: Más solicitado)" value="${s.badge || ''}" class="srv-badge w-full rounded border border-slate-300 p-1.5 text-xs"></div>
+          </div>
+        `;
+        servicesContainer.appendChild(item);
+      });
+
+      servicesContainer.querySelectorAll('.btn-srv-up').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectFormData();
+          const i = parseInt(btn.dataset.index, 10);
+          moveItemInArray(currentConfig.services, i, i - 1);
+          renderServices(currentConfig.services);
+        });
+      });
+      servicesContainer.querySelectorAll('.btn-srv-down').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectFormData();
+          const i = parseInt(btn.dataset.index, 10);
+          moveItemInArray(currentConfig.services, i, i + 1);
+          renderServices(currentConfig.services);
+        });
+      });
+      servicesContainer.querySelectorAll('.btn-srv-del').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectFormData();
+          const i = parseInt(btn.dataset.index, 10);
+          currentConfig.services.splice(i, 1);
+          renderServices(currentConfig.services);
+        });
+      });
+    }
+    document.getElementById('btnAddService').addEventListener('click', () => {
+      collectFormData();
+      if (!currentConfig.services) currentConfig.services = [];
+      currentConfig.services.push({
+        id: `servicio-${currentConfig.services.length + 1}`,
+        title: "",
+        description: "",
+      });
+      renderServices(currentConfig.services);
+    });
+
+    // --- 4. GESTOR DE PAQUETES (ARTISTAS) ---
+    const packagesContainer = document.getElementById('packagesContainer');
+    function renderPackages(pkgList) {
+      packagesContainer.innerHTML = '';
+      if (!pkgList || pkgList.length === 0) {
+        packagesContainer.innerHTML = '<p class="text-xs text-slate-400 italic">No hay paquetes de contratación registrados.</p>';
+        return;
+      }
+      pkgList.forEach((p, idx) => {
+        const item = document.createElement('div');
+        item.className = 'rounded-xl border border-amber-200 bg-amber-50/40 p-4 space-y-3';
+        item.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <button type="button" class="btn-icon bg-white text-slate-600 btn-pkg-up" data-index="${idx}">▲</button>
+              <button type="button" class="btn-icon bg-white text-slate-600 btn-pkg-down" data-index="${idx}">▼</button>
+              <span class="text-xs font-bold text-amber-900 uppercase">Paquete #${idx + 1}</span>
+            </div>
+            <button type="button" class="text-xs text-red-600 font-bold btn-pkg-del" data-index="${idx}">Eliminar</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div><input type="text" placeholder="ID (slug) *" value="${p.id || ''}" class="pkg-id w-full rounded border border-slate-300 p-2 text-xs"></div>
+            <div class="sm:col-span-2"><input type="text" placeholder="Nombre del Paquete *" value="${p.title || ''}" class="pkg-title w-full rounded border border-slate-300 p-2 text-xs font-bold"></div>
+            <div class="sm:col-span-3"><textarea placeholder="Descripción del formato *" class="pkg-desc w-full rounded border border-slate-300 p-2 text-xs" rows="2">${p.description || ''}</textarea></div>
+            <div><input type="text" placeholder="Precio (opcional, ej: $800)" value="${p.price || ''}" class="pkg-price w-full rounded border border-slate-300 p-2 text-xs"></div>
+            <div><input type="text" placeholder="Moneda (USD / PEN)" value="${p.currency || ''}" class="pkg-curr w-full rounded border border-slate-300 p-2 text-xs"></div>
+            <div><input type="text" placeholder="Duración (ej: 2 horas)" value="${p.duration || ''}" class="pkg-dur w-full rounded border border-slate-300 p-2 text-xs"></div>
+            <div class="sm:col-span-3">
+              <input type="text" placeholder="Características incluidas (separadas por comas)" value="${(p.features || []).join(', ')}" class="pkg-feat w-full rounded border border-slate-300 p-2 text-xs">
+            </div>
+          </div>
+        `;
+        packagesContainer.appendChild(item);
+      });
+
+      packagesContainer.querySelectorAll('.btn-pkg-up').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectFormData();
+          const i = parseInt(btn.dataset.index, 10);
+          moveItemInArray(currentConfig.packages, i, i - 1);
+          renderPackages(currentConfig.packages);
+        });
+      });
+      packagesContainer.querySelectorAll('.btn-pkg-down').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectFormData();
+          const i = parseInt(btn.dataset.index, 10);
+          moveItemInArray(currentConfig.packages, i, i + 1);
+          renderPackages(currentConfig.packages);
+        });
+      });
+      packagesContainer.querySelectorAll('.btn-pkg-del').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectFormData();
+          const i = parseInt(btn.dataset.index, 10);
+          currentConfig.packages.splice(i, 1);
+          renderPackages(currentConfig.packages);
+        });
+      });
+    }
+    document.getElementById('btnAddPackage').addEventListener('click', () => {
+      collectFormData();
+      if (!currentConfig.packages) currentConfig.packages = [];
+      currentConfig.packages.push({
+        id: `paquete-${currentConfig.packages.length + 1}`,
+        title: "",
+        description: "",
+        features: ["Sonido profesional propio", "Repertorio a pedido"],
+        visible: true
+      });
+      renderPackages(currentConfig.packages);
+    });
+
+    // --- 5. GESTOR DE VIDEOS & FOTOS ---
+    const videosContainer = document.getElementById('videosContainer');
+    function renderVideos(vidList) {
+      videosContainer.innerHTML = '';
+      if (!vidList || vidList.length === 0) {
+        videosContainer.innerHTML = '<p class="text-xs text-slate-400 italic">No hay videos registrados.</p>';
+        return;
+      }
+      vidList.forEach((v, idx) => {
+        const item = document.createElement('div');
+        item.className = 'rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2';
+        item.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <button type="button" class="btn-icon bg-white text-slate-600 btn-vid-up" data-index="${idx}">▲</button>
+              <button type="button" class="btn-icon bg-white text-slate-600 btn-vid-down" data-index="${idx}">▼</button>
+              <span class="text-xs font-bold text-slate-700 uppercase">Video #${idx + 1}</span>
+            </div>
+            <button type="button" class="text-xs text-red-600 font-bold btn-vid-del" data-index="${idx}">Eliminar</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input type="text" placeholder="Título *" value="${v.title || ''}" class="vid-title rounded border border-slate-300 p-1.5 text-xs font-bold">
+            <input type="text" placeholder="URL de YouTube/Vimeo *" value="${v.url || ''}" class="vid-url rounded border border-slate-300 p-1.5 text-xs font-mono">
+            <input type="text" placeholder="Descripción opcional" value="${v.description || ''}" class="vid-desc sm:col-span-2 rounded border border-slate-300 p-1.5 text-xs">
+          </div>
+        `;
+        videosContainer.appendChild(item);
+      });
+      videosContainer.querySelectorAll('.btn-vid-up').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectFormData();
+          const i = parseInt(btn.dataset.index, 10);
+          moveItemInArray(currentConfig.videos, i, i - 1);
+          renderVideos(currentConfig.videos);
+        });
+      });
+      videosContainer.querySelectorAll('.btn-vid-down').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectFormData();
+          const i = parseInt(btn.dataset.index, 10);
+          moveItemInArray(currentConfig.videos, i, i + 1);
+          renderVideos(currentConfig.videos);
+        });
+      });
+      videosContainer.querySelectorAll('.btn-vid-del').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectFormData();
+          const i = parseInt(btn.dataset.index, 10);
+          currentConfig.videos.splice(i, 1);
+          renderVideos(currentConfig.videos);
+        });
+      });
+    }
+    document.getElementById('btnAddVideo').addEventListener('click', () => {
+      collectFormData();
+      if (!currentConfig.videos) currentConfig.videos = [];
+      currentConfig.videos.push({ id: `vid-${currentConfig.videos.length + 1}`, title: "", url: "" });
+      renderVideos(currentConfig.videos);
+    });
+
+    const galleryContainer = document.getElementById('galleryContainer');
+    function renderGallery(imgList) {
+      galleryContainer.innerHTML = '';
+      if (!imgList || imgList.length === 0) {
+        galleryContainer.innerHTML = '<p class="text-xs text-slate-400 italic">No hay fotografías registradas.</p>';
+        return;
+      }
+      imgList.forEach((img, idx) => {
+        const item = document.createElement('div');
+        item.className = 'rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2';
+        item.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <button type="button" class="btn-icon bg-white text-slate-600 btn-gal-up" data-index="${idx}">▲</button>
+              <button type="button" class="btn-icon bg-white text-slate-600 btn-gal-down" data-index="${idx}">▼</button>
+              <span class="text-xs font-bold text-slate-700 uppercase">Foto #${idx + 1}</span>
+            </div>
+            <button type="button" class="text-xs text-red-600 font-bold btn-gal-del" data-index="${idx}">Eliminar</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input type="text" placeholder="URL de la imagen *" value="${img.url || ''}" class="gal-url sm:col-span-2 rounded border border-slate-300 p-1.5 text-xs font-mono">
+            <input type="text" placeholder="Texto alternativo (alt) *" value="${img.alt || ''}" class="gal-alt rounded border border-slate-300 p-1.5 text-xs">
+            <input type="text" placeholder="Pie de foto / descripción opcional" value="${img.caption || ''}" class="gal-cap sm:col-span-3 rounded border border-slate-300 p-1.5 text-xs">
+          </div>
+        `;
+        galleryContainer.appendChild(item);
+      });
+      galleryContainer.querySelectorAll('.btn-gal-up').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectFormData();
+          const i = parseInt(btn.dataset.index, 10);
+          moveItemInArray(currentConfig.gallery, i, i - 1);
+          renderGallery(currentConfig.gallery);
+        });
+      });
+      galleryContainer.querySelectorAll('.btn-gal-down').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectFormData();
+          const i = parseInt(btn.dataset.index, 10);
+          moveItemInArray(currentConfig.gallery, i, i + 1);
+          renderGallery(currentConfig.gallery);
+        });
+      });
+      galleryContainer.querySelectorAll('.btn-gal-del').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectFormData();
+          const i = parseInt(btn.dataset.index, 10);
+          currentConfig.gallery.splice(i, 1);
+          renderGallery(currentConfig.gallery);
+        });
+      });
+    }
+    document.getElementById('btnAddGallery').addEventListener('click', () => {
+      collectFormData();
+      if (!currentConfig.gallery) currentConfig.gallery = [];
+      currentConfig.gallery.push({ id: `img-${currentConfig.gallery.length + 1}`, url: "", alt: "Fotografía en vivo" });
+      renderGallery(currentConfig.gallery);
+    });
+
+    // --- 6. GESTOR DE EVENTOS ---
+    const eventsContainer = document.getElementById('eventsContainer');
+    function renderEvents(evList) {
+      eventsContainer.innerHTML = '';
+      if (!evList || evList.length === 0) {
+        eventsContainer.innerHTML = '<p class="text-xs text-slate-400 italic">No hay presentaciones registradas. La sección se ocultará automáticamente.</p>';
+        return;
+      }
+      evList.forEach((ev, idx) => {
+        const item = document.createElement('div');
+        item.className = 'rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2';
+        item.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <button type="button" class="btn-icon bg-white text-slate-600 btn-ev-up" data-index="${idx}">▲</button>
+              <button type="button" class="btn-icon bg-white text-slate-600 btn-ev-down" data-index="${idx}">▼</button>
+              <span class="text-xs font-bold text-slate-700 uppercase">Evento #${idx + 1}</span>
+            </div>
+            <button type="button" class="text-xs text-red-600 font-bold btn-ev-del" data-index="${idx}">Eliminar</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input type="text" placeholder="Nombre del evento *" value="${ev.title || ''}" class="ev-title sm:col-span-2 rounded border border-slate-300 p-1.5 text-xs font-bold">
+            <input type="text" placeholder="Fecha (ej: 14 Nov 2026) *" value="${ev.date || ''}" class="ev-date rounded border border-slate-300 p-1.5 text-xs">
+            <input type="text" placeholder="Lugar / Recinto *" value="${ev.venue || ''}" class="ev-venue rounded border border-slate-300 p-1.5 text-xs">
+            <input type="text" placeholder="Ciudad *" value="${ev.city || ''}" class="ev-city rounded border border-slate-300 p-1.5 text-xs">
+            <input type="text" placeholder="Hora (ej: 8:30 PM)" value="${ev.time || ''}" class="ev-time rounded border border-slate-300 p-1.5 text-xs">
+            <input type="text" placeholder="URL Entradas / Info" value="${ev.ticketUrl || ''}" class="ev-ticket sm:col-span-3 rounded border border-slate-300 p-1.5 text-xs font-mono">
+          </div>
+        `;
+        eventsContainer.appendChild(item);
+      });
+      eventsContainer.querySelectorAll('.btn-ev-up').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectFormData();
+          const i = parseInt(btn.dataset.index, 10);
+          moveItemInArray(currentConfig.events, i, i - 1);
+          renderEvents(currentConfig.events);
+        });
+      });
+      eventsContainer.querySelectorAll('.btn-ev-down').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectFormData();
+          const i = parseInt(btn.dataset.index, 10);
+          moveItemInArray(currentConfig.events, i, i + 1);
+          renderEvents(currentConfig.events);
+        });
+      });
+      eventsContainer.querySelectorAll('.btn-ev-del').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectFormData();
+          const i = parseInt(btn.dataset.index, 10);
+          currentConfig.events.splice(i, 1);
+          renderEvents(currentConfig.events);
+        });
+      });
+    }
+    document.getElementById('btnAddEvent').addEventListener('click', () => {
+      collectFormData();
+      if (!currentConfig.events) currentConfig.events = [];
+      currentConfig.events.push({ id: `ev-${currentConfig.events.length + 1}`, title: "", date: "", venue: "", city: "", visible: true });
+      renderEvents(currentConfig.events);
+    });
+
+    // --- 7. GESTOR DE VENTAJAS ---
+    const advantagesContainer = document.getElementById('advantagesContainer');
+    function renderAdvantages(advList) {
+      advantagesContainer.innerHTML = '';
+      if (!advList || advList.length === 0) {
+        advantagesContainer.innerHTML = '<p class="text-xs text-slate-400 italic">No hay ventajas configuradas.</p>';
+        return;
+      }
+      advList.forEach((adv, idx) => {
+        const item = document.createElement('div');
+        item.className = 'rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2';
+        item.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <button type="button" class="btn-icon bg-white text-slate-600 btn-adv-up" data-index="${idx}">▲</button>
+              <button type="button" class="btn-icon bg-white text-slate-600 btn-adv-down" data-index="${idx}">▼</button>
+              <span class="text-xs font-bold text-slate-700 uppercase">Ventaja #${idx + 1}</span>
+            </div>
+            <button type="button" class="text-xs text-red-600 font-bold btn-adv-del" data-index="${idx}">Eliminar</button>
+          </div>
+          <div class="space-y-1.5">
+            <input type="text" placeholder="Título de la ventaja *" value="${adv.title || ''}" class="adv-title w-full rounded border border-slate-300 p-1.5 text-xs font-bold">
+            <textarea placeholder="Descripción de la ventaja *" class="adv-desc w-full rounded border border-slate-300 p-1.5 text-xs" rows="2">${adv.description || ''}</textarea>
+          </div>
+        `;
+        advantagesContainer.appendChild(item);
+      });
+      advantagesContainer.querySelectorAll('.btn-adv-up').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectFormData();
+          const i = parseInt(btn.dataset.index, 10);
+          moveItemInArray(currentConfig.advantages, i, i - 1);
+          renderAdvantages(currentConfig.advantages);
+        });
+      });
+      advantagesContainer.querySelectorAll('.btn-adv-down').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectFormData();
+          const i = parseInt(btn.dataset.index, 10);
+          moveItemInArray(currentConfig.advantages, i, i + 1);
+          renderAdvantages(currentConfig.advantages);
+        });
+      });
+      advantagesContainer.querySelectorAll('.btn-adv-del').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectFormData();
+          const i = parseInt(btn.dataset.index, 10);
+          currentConfig.advantages.splice(i, 1);
+          renderAdvantages(currentConfig.advantages);
+        });
+      });
+    }
+    document.getElementById('btnAddAdvantage').addEventListener('click', () => {
+      collectFormData();
+      if (!currentConfig.advantages) currentConfig.advantages = [];
+      currentConfig.advantages.push({ title: "", description: "" });
+      renderAdvantages(currentConfig.advantages);
+    });
+
+    // --- RECOLECTOR DE DATOS COMPLETO ---
+    function collectFormData() {
+      currentConfig.id = document.getElementById('clientId').value.trim().toLowerCase();
+      currentConfig.businessName = document.getElementById('businessName').value.trim();
+      currentConfig.tagline = document.getElementById('tagline').value.trim();
+      currentConfig.logoUrl = document.getElementById('logoUrl').value.trim() || undefined;
+
+      const selectedVariant = document.querySelector('input[name="variant"]:checked');
+      currentConfig.variant = selectedVariant ? selectedVariant.value : 'artist';
+
+      currentConfig.colors = {
+        primary: document.getElementById('primaryColor').value.trim(),
+        primaryHover: document.getElementById('primaryHoverColor').value.trim(),
+      };
+
+      currentConfig.hero = {
+        badge: document.getElementById('heroBadge').value.trim() || undefined,
+        title: document.getElementById('heroTitle').value.trim(),
+        description: document.getElementById('heroDesc').value.trim(),
+        heroImage: document.getElementById('heroImage').value.trim() || undefined,
+        ctaPrimary: {
+          text: document.getElementById('heroCtaText').value.trim(),
+          link: document.getElementById('heroCtaLink').value.trim(),
+        },
+        ctaSecondary: document.getElementById('heroCtaSecText').value.trim() ? {
+          text: document.getElementById('heroCtaSecText').value.trim(),
+          link: document.getElementById('heroCtaSecLink').value.trim(),
+        } : undefined,
+      };
+
+      // About & Highlights
+      const hlInputs = document.querySelectorAll('.hl-input');
+      const hlValues = Array.from(hlInputs).map(inp => inp.value.trim()).filter(Boolean);
+      currentConfig.about = {
+        title: document.getElementById('aboutTitle').value.trim(),
+        description: document.getElementById('aboutDesc').value.trim(),
+        highlights: hlValues.length > 0 ? hlValues : undefined,
+      };
+
+      // Artist Profile
+      currentConfig.artistProfile = {
+        stageName: currentConfig.businessName,
+        genre: document.getElementById('artGenre').value.trim() || undefined,
+        bookingZone: document.getElementById('artZone').value.trim() || undefined,
+        portraitImage: document.getElementById('artPortrait').value.trim() || undefined,
+        quote: document.getElementById('artQuote').value.trim() || undefined,
+        bio: currentConfig.about.description,
+        achievements: hlValues.length > 0 ? hlValues : undefined,
+      };
+
+      // Servicios
+      const srvDom = document.querySelectorAll('#servicesContainer > div');
+      if (srvDom.length > 0) {
+        currentConfig.services = Array.from(srvDom).map(item => ({
+          id: (item.querySelector('.srv-id')?.value || '').trim().toLowerCase() || `srv-${Date.now()}`,
+          title: (item.querySelector('.srv-title')?.value || '').trim(),
+          description: (item.querySelector('.srv-desc')?.value || '').trim(),
+          price: (item.querySelector('.srv-price')?.value || '').trim() || undefined,
+          duration: (item.querySelector('.srv-duration')?.value || '').trim() || undefined,
+          badge: (item.querySelector('.srv-badge')?.value || '').trim() || undefined,
+        })).filter(s => s.title.length > 0);
+      } else {
+        currentConfig.services = [];
+      }
+
+      // Paquetes
+      const pkgDom = document.querySelectorAll('#packagesContainer > div');
+      if (pkgDom.length > 0) {
+        currentConfig.packages = Array.from(pkgDom).map(item => {
+          const feats = (item.querySelector('.pkg-feat')?.value || '')
+            .split(',')
+            .map(f => f.trim())
+            .filter(Boolean);
+          return {
+            id: (item.querySelector('.pkg-id')?.value || '').trim().toLowerCase() || `pkg-${Date.now()}`,
+            title: (item.querySelector('.pkg-title')?.value || '').trim(),
+            description: (item.querySelector('.pkg-desc')?.value || '').trim(),
+            price: (item.querySelector('.pkg-price')?.value || '').trim() || undefined,
+            currency: (item.querySelector('.pkg-curr')?.value || '').trim() || undefined,
+            duration: (item.querySelector('.pkg-dur')?.value || '').trim() || undefined,
+            features: feats.length > 0 ? feats : undefined,
+            visible: true,
+          };
+        }).filter(p => p.title.length > 0);
+      } else {
+        currentConfig.packages = [];
+      }
+
+      // Videos
+      const vidDom = document.querySelectorAll('#videosContainer > div');
+      if (vidDom.length > 0) {
+        currentConfig.videos = Array.from(vidDom).map(item => ({
+          id: `vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          title: (item.querySelector('.vid-title')?.value || '').trim(),
+          url: (item.querySelector('.vid-url')?.value || '').trim(),
+          description: (item.querySelector('.vid-desc')?.value || '').trim() || undefined,
+          platform: 'youtube',
+        })).filter(v => v.title && v.url);
+      } else {
+        currentConfig.videos = [];
+      }
+
+      // Galería
+      const galDom = document.querySelectorAll('#galleryContainer > div');
+      if (galDom.length > 0) {
+        currentConfig.gallery = Array.from(galDom).map(item => ({
+          id: `img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          url: (item.querySelector('.gal-url')?.value || '').trim(),
+          alt: (item.querySelector('.gal-alt')?.value || '').trim() || 'Fotografía de presentación',
+          caption: (item.querySelector('.gal-cap')?.value || '').trim() || undefined,
+        })).filter(g => g.url);
+      } else {
+        currentConfig.gallery = [];
+      }
+
+      // Eventos
+      const evDom = document.querySelectorAll('#eventsContainer > div');
+      if (evDom.length > 0) {
+        currentConfig.events = Array.from(evDom).map(item => ({
+          id: `ev-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          title: (item.querySelector('.ev-title')?.value || '').trim(),
+          date: (item.querySelector('.ev-date')?.value || '').trim(),
+          venue: (item.querySelector('.ev-venue')?.value || '').trim(),
+          city: (item.querySelector('.ev-city')?.value || '').trim(),
+          time: (item.querySelector('.ev-time')?.value || '').trim() || undefined,
+          ticketUrl: (item.querySelector('.ev-ticket')?.value || '').trim() || undefined,
+          visible: true,
+        })).filter(e => e.title && e.date);
+      } else {
+        currentConfig.events = [];
+      }
+
+      // Ventajas
+      const advDom = document.querySelectorAll('#advantagesContainer > div');
+      if (advDom.length > 0) {
+        currentConfig.advantages = Array.from(advDom).map(item => ({
+          title: (item.querySelector('.adv-title')?.value || '').trim(),
+          description: (item.querySelector('.adv-desc')?.value || '').trim(),
+        })).filter(a => a.title.length > 0);
+      } else {
+        currentConfig.advantages = [];
+      }
+
+      // Contacto & Horarios
+      const schInputs = document.querySelectorAll('.sch-input');
+      const schValues = Array.from(schInputs).map(inp => inp.value.trim()).filter(Boolean);
+
+      const soc = {
+        spotify: document.getElementById('socSpotify').value.trim() || undefined,
+        youtube: document.getElementById('socYouTube').value.trim() || undefined,
+        instagram: document.getElementById('socIg').value.trim() || undefined,
+        tiktok: document.getElementById('socTk').value.trim() || undefined,
+        facebook: document.getElementById('socFb').value.trim() || undefined,
+        appleMusic: document.getElementById('socApple').value.trim() || undefined,
+        soundcloud: document.getElementById('socSoundCloud').value.trim() || undefined,
+        linkedin: document.getElementById('socLk').value.trim() || undefined,
+      };
+      const hasSoc = Object.values(soc).some(Boolean);
+
+      currentConfig.contact = {
+        whatsapp: document.getElementById('contactWa').value.trim() || undefined,
+        whatsappDefaultMessage: document.getElementById('contactWaMsg').value.trim() || undefined,
+        phone: document.getElementById('contactPhone').value.trim() || undefined,
+        email: document.getElementById('contactEmail').value.trim() || undefined,
+        address: document.getElementById('contactAddress').value.trim() || undefined,
+        city: document.getElementById('contactCity').value.trim() || undefined,
+        schedule: schValues.length > 0 ? schValues : undefined,
+        socialLinks: hasSoc ? soc : undefined,
+      };
+
+      // Títulos Personalizados
+      currentConfig.sectionTitles = {
+        servicesTitle: document.getElementById('titleServices').value.trim() || undefined,
+        advantagesTitle: document.getElementById('titleAdvantages').value.trim() || undefined,
+        contactTitle: document.getElementById('titleContact').value.trim() || undefined,
+        videosTitle: document.getElementById('titleVideos').value.trim() || undefined,
+      };
+
+      // Visibilidad
+      currentConfig.sectionVisibility = {
+        about: document.getElementById('visAbout').checked,
+        services: document.getElementById('visServices').checked,
+        packages: document.getElementById('visPackages').checked,
+        videos: document.getElementById('visVideos').checked,
+        gallery: document.getElementById('visGallery').checked,
+        events: document.getElementById('visEvents').checked,
+        advantages: document.getElementById('visAdvantages').checked,
+        schedule: document.getElementById('visSchedule').checked,
+        contact: document.getElementById('visContact').checked,
+      };
+
+      // SEO
+      const kw = document.getElementById('seoKeywords').value.trim();
+      currentConfig.seo = {
+        title: document.getElementById('seoTitle').value.trim(),
+        description: document.getElementById('seoDesc').value.trim(),
+        keywords: kw ? kw.split(',').map(s => s.trim()).filter(Boolean) : undefined,
+      };
+
+      return currentConfig;
+    }
+
+    // Actualizar Vista Previa
+    function updateJsonPreview() {
+      const data = collectFormData();
+      document.getElementById('jsonPreview').textContent = JSON.stringify(data, null, 2);
+
+      // Resumen visual
+      const summary = document.getElementById('livePreviewSummary');
+      summary.innerHTML = `
+        <div class="rounded-lg bg-white p-2.5 border border-slate-200">
+          <span class="text-slate-400 block text-[10px] uppercase">Plantilla</span>
+          <span class="font-bold text-slate-800 uppercase">${data.variant}</span>
+        </div>
+        <div class="rounded-lg bg-white p-2.5 border border-slate-200">
+          <span class="text-slate-400 block text-[10px] uppercase">Color Primario</span>
+          <span class="inline-block h-3.5 w-3.5 rounded-full mr-1.5 align-middle" style="background-color: ${data.colors.primary}"></span>
+          <span class="font-mono text-slate-700">${data.colors.primary}</span>
+        </div>
+        <div class="rounded-lg bg-white p-2.5 border border-slate-200">
+          <span class="text-slate-400 block text-[10px] uppercase">Servicios / Paquetes</span>
+          <span class="font-bold text-slate-800">${(data.services?.length || 0) + (data.packages?.length || 0)} ítems</span>
+        </div>
+        <div class="rounded-lg bg-white p-2.5 border border-slate-200">
+          <span class="text-slate-400 block text-[10px] uppercase">Multimedia</span>
+          <span class="font-bold text-slate-800">${(data.videos?.length || 0)} videos / ${(data.gallery?.length || 0)} fotos</span>
+        </div>
+      `;
+    }
+
+    // Llenar Formulario con Datos del Cliente
+    function populateForm(data) {
+      currentConfig = JSON.parse(JSON.stringify(data));
+
+      document.getElementById('clientId').value = data.id || '';
+      document.getElementById('businessName').value = data.businessName || '';
+      document.getElementById('tagline').value = data.tagline || '';
+      document.getElementById('logoUrl').value = data.logoUrl || '';
+
+      const variantRadio = document.querySelector(`input[name="variant"][value="${data.variant}"]`);
+      if (variantRadio) variantRadio.checked = true;
+
+      document.getElementById('primaryColor').value = data.colors?.primary || '#d97706';
+      document.getElementById('primaryColorPicker').value = data.colors?.primary || '#d97706';
+      document.getElementById('primaryHoverColor').value = data.colors?.primaryHover || '#b45309';
+      document.getElementById('primaryHoverColorPicker').value = data.colors?.primaryHover || '#b45309';
+
+      document.getElementById('heroBadge').value = data.hero?.badge || '';
+      document.getElementById('heroTitle').value = data.hero?.title || '';
+      document.getElementById('heroDesc').value = data.hero?.description || '';
+      document.getElementById('heroImage').value = data.hero?.heroImage || '';
+      document.getElementById('heroCtaText').value = data.hero?.ctaPrimary?.text || 'Contactar';
+      document.getElementById('heroCtaLink').value = data.hero?.ctaPrimary?.link || '#contacto';
+      document.getElementById('heroCtaSecText').value = data.hero?.ctaSecondary?.text || '';
+      document.getElementById('heroCtaSecLink').value = data.hero?.ctaSecondary?.link || '';
+
+      // About & Highlights
+      document.getElementById('aboutTitle').value = data.about?.title || '';
+      document.getElementById('aboutDesc').value = data.about?.description || '';
+      renderHighlights(data.about?.highlights || data.artistProfile?.achievements || []);
+
+      // Artist Profile
+      document.getElementById('artGenre').value = data.artistProfile?.genre || '';
+      document.getElementById('artZone').value = data.artistProfile?.bookingZone || '';
+      document.getElementById('artPortrait').value = data.artistProfile?.portraitImage || '';
+      document.getElementById('artQuote').value = data.artistProfile?.quote || '';
+
+      // Listas
+      renderServices(data.services || []);
+      renderPackages(data.packages || []);
+      renderVideos(data.videos || []);
+      renderGallery(data.gallery || []);
+      renderEvents(data.events || []);
+      renderAdvantages(data.advantages || []);
+      renderSchedule(data.contact?.schedule || []);
+
+      // Contacto
+      document.getElementById('contactWa').value = data.contact?.whatsapp || '';
+      document.getElementById('contactWaMsg').value = data.contact?.whatsappDefaultMessage || '';
+      document.getElementById('contactPhone').value = data.contact?.phone || '';
+      document.getElementById('contactEmail').value = data.contact?.email || '';
+      document.getElementById('contactAddress').value = data.contact?.address || '';
+      document.getElementById('contactCity').value = data.contact?.city || '';
+
+      // Redes
+      document.getElementById('socSpotify').value = data.contact?.socialLinks?.spotify || '';
+      document.getElementById('socYouTube').value = data.contact?.socialLinks?.youtube || '';
+      document.getElementById('socIg').value = data.contact?.socialLinks?.instagram || '';
+      document.getElementById('socTk').value = data.contact?.socialLinks?.tiktok || '';
+      document.getElementById('socFb').value = data.contact?.socialLinks?.facebook || '';
+      document.getElementById('socApple').value = data.contact?.socialLinks?.appleMusic || '';
+      document.getElementById('socSoundCloud').value = data.contact?.socialLinks?.soundcloud || '';
+      document.getElementById('socLk').value = data.contact?.socialLinks?.linkedin || '';
+
+      // Visibilidad
+      const vis = data.sectionVisibility || {};
+      document.getElementById('visAbout').checked = vis.about !== false;
+      document.getElementById('visServices').checked = vis.services !== false;
+      document.getElementById('visPackages').checked = vis.packages !== false;
+      document.getElementById('visVideos').checked = vis.videos !== false;
+      document.getElementById('visGallery').checked = vis.gallery !== false;
+      document.getElementById('visEvents').checked = vis.events !== false;
+      document.getElementById('visAdvantages').checked = vis.advantages !== false;
+      document.getElementById('visSchedule').checked = vis.schedule !== false;
+      document.getElementById('visContact').checked = vis.contact !== false;
+
+      // Títulos
+      const t = data.sectionTitles || {};
+      document.getElementById('titleServices').value = t.servicesTitle || '';
+      document.getElementById('titleAdvantages').value = t.advantagesTitle || '';
+      document.getElementById('titleContact').value = t.contactTitle || '';
+      document.getElementById('titleVideos').value = t.videosTitle || '';
+
+      // SEO
+      document.getElementById('seoTitle').value = data.seo?.title || '';
+      document.getElementById('seoDesc').value = data.seo?.description || '';
+      document.getElementById('seoKeywords').value = (data.seo?.keywords || []).join(', ');
+
+      updateCounters();
+      updateJsonPreview();
+    }
+
+    // Contadores de caracteres SEO
+    function updateCounters() {
+      document.getElementById('titleCounter').textContent = `${document.getElementById('seoTitle').value.length} / 60`;
+      document.getElementById('descCounter').textContent = `${document.getElementById('seoDesc').value.length} / 160`;
+    }
+    document.getElementById('seoTitle').addEventListener('input', updateCounters);
+    document.getElementById('seoDesc').addEventListener('input', updateCounters);
+
+    // Cargar Lista de Clientes
+    async function fetchExistingClients() {
+      try {
+        const res = await fetch('/api/clients');
+        const json = await res.json();
+        if (json.success && json.clients) {
+          const select = document.getElementById('existingClients');
+          select.innerHTML = '<option value="">-- Cargar cliente --</option>';
+          json.clients.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c;
+            opt.textContent = c;
+            select.appendChild(opt);
+          });
+        }
+      } catch (err) {
+        console.error("Error al cargar clientes:", err);
+      }
+    }
+
+    document.getElementById('btnLoadClient').addEventListener('click', async () => {
+      const selected = document.getElementById('existingClients').value;
+      if (!selected) return;
+
+      try {
+        const res = await fetch(`/api/client/${selected}`);
+        const json = await res.json();
+        if (json.success && json.data) {
+          populateForm(json.data);
+          showAlert(`Cliente "${selected}" cargado exitosamente.`, 'success');
+        } else {
+          showAlert(json.error || 'Error al cargar cliente', 'error');
+        }
+      } catch (err) {
+        showAlert('Error de conexión con el generador local', 'error');
+      }
+    });
+
+    document.getElementById('btnNewClient').addEventListener('click', () => {
+      populateForm({
+        id: "nuevo-artista",
+        businessName: "Nuevo Artista",
+        tagline: "Voz & Piano en Vivo",
+        variant: "artist",
+        colors: { primary: "#d97706", primaryHover: "#b45309" },
+        hero: {
+          title: "Música en vivo inolvidable para momentos especiales",
+          description: "Repertorio acústico y en banda para bodas, celebraciones y conciertos.",
+          ctaPrimary: { text: "Cotizar Fecha", link: "#contacto" }
+        },
+        about: {
+          title: "Pasión musical en vivo",
+          description: "Músico profesional con amplia experiencia en recitales y eventos.",
+          highlights: ["Más de 10 años en escena", "Repertorio personalizado"]
+        },
+        services: [],
+        packages: [
+          { id: "pkg-1", title: "Show Solista", description: "Piano y voz en directo para cócteles y ceremonias.", visible: true }
+        ],
+        advantages: [
+          { title: "Sonido de Alta Gama", description: "Equipos profesionales incluidos." }
+        ],
+        contact: {
+          whatsapp: "+51999888777",
+          schedule: ["Lunes a Viernes: 10:00 AM - 7:00 PM"]
+        },
+        seo: {
+          title: "Nuevo Artista | Presentaciones Musicales en Vivo",
+          description: "Música en vivo para bodas y eventos exclusivos. Reserva tu fecha."
+        }
+      });
+      showAlert('Formulario listo para nuevo cliente.', 'info');
+    });
+
+    // Guardar Cliente
+    document.getElementById('btnSaveClient').addEventListener('click', async () => {
+      const config = collectFormData();
+      const overwrite = document.getElementById('chkOverwrite').checked;
+
+      showAlert('Validando y guardando...', 'info');
+
+      try {
+        const res = await fetch('/api/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ config, overwrite }),
+        });
+
+        const json = await res.json();
+
+        if (res.status === 409) {
+          showAlert(json.message, 'warning');
+          return;
+        }
+
+        if (res.status === 422) {
+          let errorMsg = '<strong>Errores de validación:</strong><ul class="list-disc ml-5 mt-1">';
+          json.details.forEach(d => {
+            errorMsg += `<li><strong>${d.field}:</strong> ${d.message}</li>`;
+          });
+          errorMsg += '</ul>';
+          showAlert(errorMsg, 'error');
+          return;
+        }
+
+        if (!json.success) {
+          showAlert(json.error || 'Error al guardar configuración', 'error');
+          return;
+        }
+
+        showAlert(`✓ ${json.message}`, 'success');
+        fetchExistingClients();
+      } catch (err) {
+        showAlert(`Error de conexión con el servidor local: ${err.message}`, 'error');
+      }
+    });
+
+    function showAlert(html, type) {
+      const alert = document.getElementById('validationAlert');
+      alert.classList.remove('hidden', 'bg-emerald-50', 'text-emerald-800', 'border-emerald-300', 'bg-red-50', 'text-red-800', 'border-red-300', 'bg-amber-50', 'text-amber-800', 'border-amber-300', 'bg-blue-50', 'text-blue-800');
+      alert.classList.add('border');
+
+      if (type === 'success') {
+        alert.classList.add('bg-emerald-50', 'text-emerald-800', 'border-emerald-300');
+      } else if (type === 'error') {
+        alert.classList.add('bg-red-50', 'text-red-800', 'border-red-300');
+      } else if (type === 'warning') {
+        alert.classList.add('bg-amber-50', 'text-amber-800', 'border-amber-300');
+      } else {
+        alert.classList.add('bg-blue-50', 'text-blue-800', 'border-blue-200');
+      }
+
+      alert.innerHTML = html;
+    }
+
+    // Inicializar
+    fetchExistingClients().then(() => {
+      document.getElementById('existingClients').value = 'demo-artist';
+      document.getElementById('btnLoadClient').click();
+    });
+  </script>
+</body>
+</html>

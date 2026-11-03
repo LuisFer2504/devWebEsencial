@@ -1,0 +1,101 @@
+{
+  "id": "consultoria-proyectos",
+  "businessName": "Desarrolladores & Consultores para Proyectos",
+  "tagline": "Soluciones digitales para llevar tus proyectos más lejos",
+  "variant": "professional",
+  "colors": {
+    "primary": "#172554",
+    "primaryHover": "#1D4ED8"
+  },
+  "hero": {
+    "badge": "Desarrollo de software y consultoría tecnológica",
+    "title": "Convertimos tus ideas en soluciones digitales",
+    "description": "Te ayudamos a planificar, diseñar y desarrollar soluciones tecnológicas adaptadas a las necesidades de tu negocio. Desde una página web hasta herramientas que optimizan tus procesos.",
+    "ctaPrimary": {
+      "text": "Cuéntanos tu proyecto",
+      "link": "#contacto"
+    },
+    "ctaSecondary": {
+      "text": "Conoce nuestros servicios",
+      "link": "#servicios"
+    }
+  },
+  "about": {
+    "title": "Tecnología con propósito",
+    "description": "Somos un equipo de desarrolladores y consultores enfocado en transformar necesidades reales en soluciones digitales prácticas. Trabajamos contigo para entender tus objetivos, definir el alcance del proyecto y encontrar una solución adecuada a tus recursos.",
+    "highlights": [
+      "Desarrollo ágil enfocado en resultados de negocio",
+      "Arquitectura de software moderna, escalable y segura",
+      "Acompañamiento continuo y soporte post-lanzamiento"
+    ]
+  },
+  "services": [
+    {
+      "id": "web-development",
+      "title": "Desarrollo de páginas web",
+      "description": "Creamos sitios web modernos y adaptables a celulares, tablets y computadoras para presentar tu negocio, servicios o portafolio.",
+      "price": "200",
+      "badge": "Presencia digital"
+    },
+    {
+      "id": "business-systems",
+      "title": "Sistemas y herramientas digitales",
+      "description": "Desarrollamos aplicaciones y herramientas web orientadas a organizar información, simplificar tareas y mejorar procesos de trabajo.",
+      "price": "200",
+      "badge": "Digitalización"
+    },
+    {
+      "id": "technical-consulting",
+      "title": "Consultoría tecnológica",
+      "description": "Te ayudamos a evaluar necesidades, definir funcionalidades y organizar los pasos técnicos para poner en marcha tu proyecto.",
+      "price": "150",
+      "badge": "Planificación"
+    },
+    {
+      "id": "maintenance",
+      "title": "Mantenimiento y mejoras",
+      "description": "Revisamos soluciones existentes y proponemos ajustes, correcciones y mejoras según las necesidades y el alcance acordado.",
+      "price": "100",
+      "badge": "Evolución"
+    }
+  ],
+  "advantages": [
+    {
+      "title": "Soluciones a tu medida",
+      "description": "Priorizamos las necesidades y objetivos de tu proyecto antes de proponer una solución."
+    },
+    {
+      "title": "Alcance claro",
+      "description": "Definimos funcionalidades, entregables y prioridades para mantener el trabajo organizado."
+    },
+    {
+      "title": "Diseño centrado en el usuario",
+      "description": "Buscamos que cada solución sea fácil de entender, navegar y utilizar."
+    },
+    {
+      "title": "Comunicación directa",
+      "description": "Mantenemos una comunicación clara para revisar avances y coordinar decisiones."
+    }
+  ],
+  "contact": {
+    "whatsapp": "+51960651982",
+    "whatsappDefaultMessage": "Hola, quisiera consultar sobre un proyecto de desarrollo de software.",
+    "phone": "+51923276578",
+    "city": "Lima, Perú",
+    "schedule": [
+      "Lunes a Viernes: 8:30 AM - 6:00 PM",
+      "Sábados: 9:00 AM - 1:00 PM"
+    ]
+  },
+  "seo": {
+    "title": "Desarrollo de Software y Consultoría Tecnológica | Perú",
+    "description": "Desarrollo de páginas web, herramientas digitales y consultoría tecnológica para negocios y proyectos en Perú. Cuéntanos tu idea.",
+    "keywords": [
+      "desarrollo de software",
+      "desarrollo web",
+      "consultoría tecnológica",
+      "páginas web para negocios",
+      "sistemas digitales"
+    ]
+  }
+}

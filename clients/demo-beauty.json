@@ -1,0 +1,113 @@
+{
+  "id": "demo-beauty",
+  "businessName": "Aura Studio & Spa",
+  "tagline": "Cuidado facial avanzado, estética corporal y bienestar integral",
+  "variant": "beauty",
+  "colors": {
+    "primary": "#be185d",
+    "primaryHover": "#9d174d",
+    "accent": "#f472b6",
+    "neutralBg": "#fdf2f8"
+  },
+  "hero": {
+    "badge": "Tu santuario de belleza y relajación en San Isidro",
+    "title": "Renueva tu piel y resalta tu belleza natural con tratamientos exclusivos",
+    "description": "Protocolos personalizados diseñados por cosmetólogas certificadas, aparatología de última generación y productos dermatológicos de alta gama.",
+    "ctaPrimary": {
+      "text": "Reservar cita por WhatsApp",
+      "link": "#contacto"
+    },
+    "ctaSecondary": {
+      "text": "Ver carta de tratamientos",
+      "link": "#servicios"
+    }
+  },
+  "about": {
+    "title": "Un espacio concebido para tu armonía y cuidado personal",
+    "description": "En Aura Studio & Spa combinamos ciencia estética con un ambiente cálido y relajante. Cada sesión es una pausa consciente en tu rutina para revitalizar tu piel, aliviar tensiones y potenciar tu confianza.",
+    "highlights": [
+      "Diagnóstico facial computarizado previo a cada tratamiento",
+      "Cosmecéuticos importados con registro sanitario y alta eficacia",
+      "Cabinas privadas e higienizadas bajo estándares clínicos rigurosos"
+    ]
+  },
+  "services": [
+    {
+      "id": "limpieza-facial-profunda",
+      "title": "Limpieza Facial Profunda con Hidrodermoabrasión",
+      "description": "Extracción indolora, exfoliación con puntas de diamante, mascarilla calmante e hidratación con ácido hialurónico puro.",
+      "duration": "75 minutos",
+      "price": "S/ 120",
+      "badge": "Tratamiento Estrella"
+    },
+    {
+      "id": "masaje-relajante-descontracturante",
+      "title": "Masaje Relajante & Descontracturante",
+      "description": "Combinación de aromaterapia, piedras volcánicas calientes y maniobras descontracturantes para liberar el estrés acumulado.",
+      "duration": "60 minutos",
+      "price": "S/ 140",
+      "badge": "Más solicitado"
+    },
+    {
+      "id": "lifting-pestanas-cejas",
+      "title": "Lifting de Pestañas & Laminado de Cejas",
+      "description": "Curvatura y nutrición con keratina para pestañas naturales, junto a diseño y tinte orgánico para cejas definidas.",
+      "duration": "90 minutos",
+      "price": "S/ 110",
+      "badge": "Especial de temporada"
+    },
+    {
+      "id": "peeling-iluminador",
+      "title": "Peeling Químico Iluminador Antimanchas",
+      "description": "Tratamiento dermatológico no invasivo con ácidos suaves para unificar el tono de la piel y atenuar manchas solares.",
+      "duration": "50 minutos",
+      "price": "S/ 160"
+    }
+  ],
+  "advantages": [
+    {
+      "title": "Atención 100% personalizada",
+      "description": "No aplicamos protocolos genéricos: adaptamos cada fórmula y activo a las necesidades de tu tipo de piel."
+    },
+    {
+      "title": "Cosmetología y dermatología estética ética",
+      "description": "Solo empleamos marcas de renombre internacional libres de parabenos y con evidencia clínica comprobada."
+    },
+    {
+      "title": "Ambiente de relajación total",
+      "description": "Música relajante, difusores de aceites esenciales y cabinas climatizadas para desconectarte del ritmo de la ciudad."
+    },
+    {
+      "title": "Puntualidad y reserva sin esperas",
+      "description": "Tu tiempo es valioso. Organizamos nuestra agenda para atenderte exactamente a la hora pactada."
+    }
+  ],
+  "contact": {
+    "whatsapp": "+51998877665",
+    "whatsappDefaultMessage": "Hola Aura Studio, deseo consultar la disponibilidad de citas para el siguiente tratamiento:",
+    "phone": "+51 1 221 4567",
+    "email": "citas@aurastudio.pe",
+    "address": "Calle Las Camelias 450, Piso 3, San Isidro",
+    "city": "Lima, Perú",
+    "googleMapsUrl": "https://maps.google.com/?q=San+Isidro+Lima+Peru",
+    "schedule": [
+      "Lunes a Viernes: 10:00 AM - 8:00 PM",
+      "Sábados: 9:00 AM - 7:00 PM"
+    ],
+    "socialLinks": {
+      "instagram": "https://www.instagram.com",
+      "tiktok": "https://www.tiktok.com",
+      "facebook": "https://www.facebook.com"
+    }
+  },
+  "seo": {
+    "title": "Aura Studio & Spa | Limpieza Facial y Masajes en San Isidro",
+    "description": "Tratamientos faciales, masajes relajantes y lifting en San Isidro, Lima. Diagnóstico de piel y cosmecéuticos de alta gama. Reserva tu cita.",
+    "keywords": [
+      "spa en san isidro lima",
+      "limpieza facial profunda lima",
+      "masajes descontracturantes san isidro",
+      "lifting de pestanas lima"
+    ]
+  }
+}

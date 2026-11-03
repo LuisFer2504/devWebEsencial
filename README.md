@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Web Esencial — Sistema de Plantillas y Editor Visual
 
-## Getting Started
+Plataforma modular y reutilizable para crear, previsualizar y desplegar sitios web estáticos de alta conversión para pequeños negocios, consultorías y artistas musicales en Perú y el mundo.
 
-First, run the development server:
+Desarrollado con **Next.js 15 (App Router)**, **React 19**, **TypeScript**, **Tailwind CSS**, **Zod** y **Vitest**.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 1. Arquitectura y Aislamiento de Seguridad
+
+El sistema mantiene una separación física total entre la web pública y el generador local:
+
+```text
+├── clients/                  # Fuente de verdad: configuraciones JSON de cada cliente
+│   ├── demo-artist.json        # Cantautor / Pianista / Show en vivo (Variante artist)
+│   ├── demo-professional.json  # Estudio contable / Servicios profesionales
+│   ├── demo-commerce.json      # Ferretería / Venta rápida por WhatsApp
+│   ├── demo-beauty.json        # Spa / Belleza y reserva de citas
+│   └── consultoria-proyectos.json # Consultora de tecnología y desarrollo
+├── tools/
+│   └── generator/            # Herramienta local aislada (localhost:3001)
+│       ├── index.html        # Formulario interactivo completo con tabs, ordenamiento y preview
+│       └── server.mjs        # Servidor Node con validación Zod y bloqueo de sobreescritura
+├── src/
+│   ├── app/                  # ÚNICAMENTE la landing page pública del cliente (Next.js)
+│   │   ├── layout.tsx        # Inyección de variables CSS y metadatos SEO
+│   │   └── page.tsx          # Renderizador de la variante según CLIENT_ID
+│   ├── components/
+│   │   ├── shared/           # Navbar, Footer, WhatsAppButton, ContactSection
+│   │   └── variants/         # Diseños diferenciados: Artist, Professional, Commerce, Beauty
+│   ├── config/
+│   │   └── client-loader.ts  # Carga estática y validación estricta en build time
+│   ├── schemas/
+│   │   └── client.schema.ts  # Contrato tipado con Zod
+│   └── utils/
+│       ├── whatsapp.ts       # Generador de enlaces https://wa.me/ con mensajes personalizados
+│       └── media.ts          # Normalizador seguro de URLs de YouTube y Vimeo para iframes
+└── tests/                    # 13 pruebas unitarias y de seguridad (Vitest)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 2. Variantes Visuales Incluidas
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Las 4 variantes cuentan con composiciones, jerarquías y experiencias de usuario radicalmente distintas:
 
-## Learn More
+| Variante | Rubros objetivo | Composición y enfoque |
+| :--- | :--- | :--- |
+| **`artist`** *(Nueva)* | Cantantes, pianistas, cantautores, bandas, solistas | Atmósfera escénica inmersiva (`zinc-950` y acento ámbar/dorado), portada con foto de concierto, reproductores responsivos de video (YouTube/Vimeo) y enlaces a Spotify, calendario de presentaciones en vivo, paquetes de contratación para bodas/eventos y contacto de management. |
+| **`professional`** | Consultorías, estudios contables, bufetes, clínicas | Layout corporativo asimétrico, panel dinámico con pilares del cliente o imagen de portada, catálogo de servicios estructurados y diferenciales de confianza. |
+| **`commerce`** | Tiendas locales, ferreterías, talleres, repuestos | Layout centrado de alto impacto comercial, vitrina de productos con botón directo "Pedir por WhatsApp", facilidades de pago y barra fija de conversión en móviles. |
+| **`beauty`** | Spas, salones de belleza, estética, cuidado facial | Atmósfera editorial y sensorial, carta de tratamientos estilo menú con tiempos de duración y precios, y botones de reserva de citas. |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 3. Editor Visual Totalmente Editable (Fase 2 y 7)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+A diferencia de versiones preliminares, **no existen textos fijos obligatorios** en los componentes:
+- **Horarios de atención:** Ahora son 100% editables en el editor (agregar, editar el texto, reordenar con ▲/▼, eliminar o dejar vacíos para ocultar la sección).
+- **Pilares y logros (`highlights`):** Ahora se administran dinámicamente desde el editor sin inyectar textos de contadores ni de otros rubros.
+- **Títulos y subtítulos de sección:** Personalizables para servicios, ventajas, contacto, videos y eventos.
+- **Control de visibilidad:** Interruptores para activar o apagar secciones completas (Sobre Nosotros, Servicios, Paquetes, Videos, Galería, Eventos, Horarios, Ventajas).
+- **Reordenamiento:** Cada lista (servicios, paquetes, fotos, videos, eventos, ventajas, horarios) cuenta con controles para subir (▲) o bajar (▼) elementos.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 4. Instalación y Comandos
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Requisitos previos
+- Node.js `v20.x` o superior (probado en `v22.12.0`).
+- npm `10.x` o superior.
+
+### Comandos disponibles
+
+| Comando | Descripción |
+| :--- | :--- |
+| `npm run generate` | Inicia el editor visual local en `http://localhost:3001`. |
+| `npm run dev` | Inicia el servidor de desarrollo de la web pública en `http://localhost:3000`. |
+| `npm run build` | Compila la exportación estática del cliente activo en la carpeta `out/`. |
+| `npm test` | Ejecuta las 13 pruebas unitarias en Vitest. |
+| `npm run type-check` | Valida todos los tipos TypeScript del proyecto (`tsc --noEmit`). |
+| `npm run lint` | Ejecuta ESLint sobre el proyecto. |
+
+---
+
+## 5. Cómo Crear una Página para un Artista Musical
+
+1. Ejecuta el generador local:
+   ```bash
+   npm run generate
+   ```
+2. Abre `http://localhost:3001` en tu navegador.
+3. Haz clic en **"+ Nuevo"** o selecciona **`demo-artist`** en el selector superior para partir de un ejemplo de cantautor/pianista.
+4. En **1. Identidad & Rubro**, selecciona la variante **`artist`** y define el ID (ej: `marco-antonio-musica`).
+5. En **2. Portada & Hero**, añade la foto de portada escénica y los botones de contratación.
+6. En **3. Biografía**, redacta la historia artística e ingresa los hitos o reconocimientos.
+7. En **4. Servicios / Paquetes**, configura los paquetes de contratación (ej: "Show Acústico Piano & Voz", "Banda Completa para Bodas").
+8. En **5. Fotos & Videos**, añade URLs de videos de YouTube/Vimeo y fotografías en vivo.
+9. En **6. Presentaciones**, añade las fechas de conciertos programados.
+10. En **8. Contacto**, configura WhatsApp, Spotify, YouTube e Instagram.
+11. En **10. Guardar**, revisa el resumen visual y guarda el archivo en `clients/marco-antonio-musica.json`.
+
+---
+
+## 6. Despliegue Independiente en Vercel por Cliente
+
+Cada cliente se despliega como un **proyecto independiente en Vercel** conectado al mismo repositorio:
+
+1. Crea un nuevo proyecto en Vercel importando este repositorio.
+2. En **Environment Variables**, define:
+   - **Key:** `CLIENT_ID`
+   - **Value:** El identificador del cliente (ej: `demo-artist`, `demo-professional`, etc.).
+3. Vercel ejecutará `npm run build`, generará la exportación estática en `out/` y desplegará un sitio estático ultrarrápido y seguro.

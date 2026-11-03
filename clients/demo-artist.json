@@ -1,0 +1,172 @@
+{
+  "id": "demo-artist",
+  "businessName": "Tyler Kealey",
+  "tagline": "Pianista, cantautor y espectáculo musical en vivo",
+  "variant": "artist",
+  "colors": {
+    "primary": "#d97706",
+    "primaryHover": "#b45309",
+    "accent": "#f59e0b",
+    "neutralBg": "#09090b"
+  },
+  "hero": {
+    "badge": "Piano & Voz en Vivo • Dueling Pianos",
+    "title": "Música en vivo que transforma cada evento en una experiencia inolvidable",
+    "description": "Repertorio versátil que combina clásicos del rock, pop, blues y composiciones originales. Disponible para bodas, festivales, conciertos y eventos corporativos exclusivos.",
+    "ctaPrimary": {
+      "text": "Cotizar Presentación en Vivo",
+      "link": "#contacto"
+    },
+    "ctaSecondary": {
+      "text": "Ver Videos en Escena",
+      "link": "#musica"
+    },
+    "heroImage": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1200&auto=format&fit=crop"
+  },
+  "artistProfile": {
+    "stageName": "Tyler Kealey",
+    "genre": "Singer-Songwriter • Piano Rock & Blues",
+    "bookingZone": "Presentaciones nacionales e internacionales",
+    "bio": "Tyler Kealey es un cantante, compositor y pianista canadiense reconocido por su energía desbordante en escena y su capacidad para conectar con el público a través de historias cantadas con pasión.\n\nCon más de 15 años de trayectoria en giras, festivales y escenarios emblemáticos, destaca tanto en recitales íntimos como en el aclamado formato de Dueling Pianos, donde la espontaneidad y la interacción musical son los protagonistas.",
+    "quote": "La música en vivo no se trata solo de notas, sino de los momentos inolvidables que creamos juntos frente al escenario.",
+    "portraitImage": "https://images.unsplash.com/photo-1520523839898-50712825e617?q=80&w=800&auto=format&fit=crop",
+    "achievements": [
+      "Más de 1,200 presentaciones en vivo entre festivales, clubes y eventos privados",
+      "Álbumes originales con rotación en emisoras independientes y plataformas de streaming",
+      "Presentaciones internacionales en formato solista y dueling pianos"
+    ]
+  },
+  "about": {
+    "title": "Pasión musical al servicio de tu evento",
+    "description": "Cada presentación está diseñada para adaptarse al ambiente de tu celebración: desde melodías sofisticadas para cócteles y cenas, hasta espectáculos vibrantes donde todo el público canta y baila."
+  },
+  "videos": [
+    {
+      "id": "vid-1",
+      "title": "Presentación en Vivo — Sesión Acústica de Piano",
+      "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "description": "Interpretación en directo con arreglos propios para piano y voz.",
+      "platform": "youtube"
+    },
+    {
+      "id": "vid-2",
+      "title": "Show Dueling Pianos — Grandes Éxitos y Energía en Escena",
+      "url": "https://www.youtube.com/watch?v=kJQP7kiw5Fk",
+      "description": "Dinamismo, interacción con la audiencia y clásicos del rock y pop.",
+      "platform": "youtube"
+    }
+  ],
+  "gallery": [
+    {
+      "id": "img-1",
+      "url": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=800&auto=format&fit=crop",
+      "alt": "Concierto en vivo con iluminación escénica",
+      "caption": "Festival en vivo — Escenario Principal"
+    },
+    {
+      "id": "img-2",
+      "url": "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?q=80&w=800&auto=format&fit=crop",
+      "alt": "Manos sobre las teclas del piano en concierto",
+      "caption": "Momento acústico al piano"
+    },
+    {
+      "id": "img-3",
+      "url": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop",
+      "alt": "Ambiente de fiesta y concierto",
+      "caption": "Interacción con el público en evento corporativo"
+    }
+  ],
+  "events": [
+    {
+      "id": "ev-1",
+      "title": "Recital Acústico de Primavera",
+      "date": "14 Noviembre 2026",
+      "time": "8:30 PM",
+      "venue": "Teatro Central",
+      "city": "Lima",
+      "description": "Noche íntima de canciones originales y reinterpretaciones de clásicos.",
+      "visible": true
+    },
+    {
+      "id": "ev-2",
+      "title": "Show Especial Dueling Pianos",
+      "date": "28 Noviembre 2026",
+      "time": "9:00 PM",
+      "venue": "Club House Lounge",
+      "city": "Miraflores",
+      "description": "Dos pianos, peticiones de canciones en vivo y pura diversión.",
+      "visible": true
+    }
+  ],
+  "packages": [
+    {
+      "id": "pkg-acustico",
+      "title": "Piano & Voz Solista",
+      "description": "Ideal para cócteles, ceremonias de boda, recepciones y cenas privadas con un ambiente cálido y sofisticado.",
+      "price": "$800",
+      "currency": "USD",
+      "duration": "2 horas",
+      "features": [
+        "Piano digital profesional de alta gama",
+        "Sistema de sonido y amplificación acústica propio",
+        "Repertorio personalizado para momentos clave del evento",
+        "Coordinación previa de temas especiales"
+      ],
+      "ctaText": "Consultar este formato",
+      "visible": true
+    },
+    {
+      "id": "pkg-dueling",
+      "title": "Espectáculo Dueling Pianos",
+      "description": "Dos pianistas en escena compitiendo amistosamente, complaciendo pedidos del público e incendiando la pista de baile.",
+      "price": "Cotización según evento",
+      "duration": "3 horas",
+      "features": [
+        "Dos pianos en escena con iluminación coordinada",
+        "Show interactivo con tarjetas de pedidos musicales",
+        "Humor, ritmo y participación de los asistentes",
+        "Sonido completo de alta potencia"
+      ],
+      "ctaText": "Cotizar Dueling Pianos",
+      "visible": true
+    },
+    {
+      "id": "pkg-banda",
+      "title": "Banda Completa para Fiestas",
+      "description": "Piano, bajo, batería y guitarra para llevar la energía al máximo nivel en bodas y celebraciones masivas.",
+      "price": "Cotización según requerimientos",
+      "duration": "4 horas",
+      "features": [
+        "Músicos profesionales de sesión de primer nivel",
+        "Repertorio bailable que abarca múltiples décadas",
+        "Ingeniero de sonido dedicado",
+        "Pausa musical programada entre sets"
+      ],
+      "ctaText": "Solicitar Propuesta",
+      "visible": true
+    }
+  ],
+  "contact": {
+    "whatsapp": "+51987654321",
+    "whatsappDefaultMessage": "Hola Tyler Kealey, quisiera consultar disponibilidad para contratar una presentación musical en la siguiente fecha:",
+    "email": "booking@tylerkealey.com",
+    "phone": "+51 987 654 321",
+    "city": "Disponible para eventos en Perú e Internacional",
+    "socialLinks": {
+      "spotify": "https://open.spotify.com",
+      "youtube": "https://www.youtube.com",
+      "instagram": "https://www.instagram.com",
+      "facebook": "https://www.facebook.com"
+    }
+  },
+  "seo": {
+    "title": "Tyler Kealey | Músico, Pianista y Cantautor en Vivo",
+    "description": "Contrata a Tyler Kealey para bodas, eventos corporativos y festivales. Shows solistas de piano y el vibrante formato de Dueling Pianos.",
+    "keywords": [
+      "musica en vivo bodas",
+      "pianista eventos corporativos",
+      "dueling pianos show",
+      "cantautor en vivo"
+    ]
+  }
+}
