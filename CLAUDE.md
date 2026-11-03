@@ -51,6 +51,14 @@ usa un servidor estático.
 Validación mínima antes de entregar cualquier cambio: `npm test && npm run type-check && npm run lint`
 y `npm run build` para **cada** cliente afectado.
 
+## Git y Pull Requests
+
+Repo `LuisFer2504/devWebEsencial` (privado), rama principal `produccion`. **Carga la Skill
+`git-workflow`** (`.claude/skills/git-workflow/SKILL.md`) antes de crear ramas, commits o PRs.
+Resumen: rama `<feature|fix|hotfix|docs|refactor|test>/<kebab-case>` desde `origin/produccion`,
+Conventional Commits, PR con `.github/pull_request_template.md`. Nunca commit/push a `produccion`,
+nunca `gh pr merge` ni aprobar PRs: el merge lo hace solo el propietario.
+
 ## Despliegue
 
 Un proyecto Vercel por cliente, mismo repo, env `CLIENT_ID=<id>`. No hay CI, ni scripts de deploy,
@@ -80,5 +88,5 @@ ni dominios configurados en el repo. **Nunca despliegues ni publiques sin pedido
 
 ## Estado
 
-Todo el trabajo posterior a `create-next-app` está **sin commitear**. Problemas conocidos y
-prioridades: `.claude/skills/web-esencial/references/ROADMAP.md`.
+Línea base versionada en `produccion` (commit `9cc3d71`). Problemas conocidos y prioridades:
+`.claude/skills/web-esencial/references/ROADMAP.md`.
