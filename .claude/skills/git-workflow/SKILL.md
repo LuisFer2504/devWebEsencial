@@ -18,6 +18,8 @@ está en la Skill `web-esencial`.
 | Aprobación y merge | **Solo el propietario**, en persona |
 
 **Importante:** el plan actual de GitHub no permite reglas de protección ni rulesets en repos privados
+(la API devuelve 403). Nada impide técnicamente un push a `produccion`: las reglas de esta Skill son la
+única barrera y deben cumplirse literalmente.
 (la API devuelve 403). **La protección real de GitHub sigue pendiente** y GitHub no impide un push a
 `produccion`.
 
