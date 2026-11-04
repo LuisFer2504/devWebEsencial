@@ -56,7 +56,7 @@ y `npm run build` para **cada** cliente afectado.
 
 Repo `LuisFer2504/devWebEsencial` (privado), rama principal `produccion`. **Carga la Skill
 `git-workflow`** (`.claude/skills/git-workflow/SKILL.md`) antes de crear ramas, commits o PRs.
-Resumen: rama `<feature|fix|hotfix|docs|refactor|test>/<kebab-case>` desde `origin/produccion`,
+Resumen: rama `dev-<descripcion-con-guiones>` (ej. `dev-cambios-nuevos`) desde `origin/produccion`,
 Conventional Commits, PR con `.github/pull_request_template.md`. Nunca commit/push a `produccion`,
 nunca `gh pr merge` ni aprobar PRs: el merge lo hace solo el propietario.
 nunca `gh pr merge` ni aprobar PRs: el merge lo hace solo el propietario. Un hook local

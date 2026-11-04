@@ -1,6 +1,6 @@
 ---
 name: git-workflow
-description: Flujo Git/GitHub obligatorio del repositorio devWebEsencial (rama protegida por política `produccion`). Úsala siempre que se pida crear una funcionalidad, corregir un error, refactorizar, escribir documentación, preparar una entrega, crear una rama, generar commits, publicar una rama, abrir un Pull Request o actualizar una rama de trabajo.
+description: Flujo Git/GitHub obligatorio del repositorio devWebEsencial (rama protegida por política `produccion`, ramas `dev-<descripcion>`). Úsala siempre que se pida crear una funcionalidad, corregir un error, refactorizar, escribir documentación, preparar una entrega, crear una rama, generar commits, publicar una rama, abrir un Pull Request o actualizar una rama de trabajo.
 ---
 
 # Git workflow — devWebEsencial
@@ -48,16 +48,23 @@ Skill deben cumplirse igualmente aunque una operación no resulte bloqueada.
 
 ## Ramas
 
-Formato `<prefijo>/<descripcion-kebab-case>`, corto y descriptivo.
+Formato obligatorio: **`dev-<descripcion>`**, todo en minúsculas, palabras separadas por guiones, sin
+barras `/`, sin tildes ni `ñ`, corto y descriptivo (idealmente 2–5 palabras, en español).
 
-| Prefijo | Uso | Ejemplo |
-|---|---|---|
-| `feature/` | Nueva funcionalidad | `feature/visual-preview` |
-| `fix/` | Corrección | `fix/client-data-loss` |
-| `hotfix/` | Problema crítico en producción | `hotfix/generator-security` |
-| `docs/` | Documentación | `docs/git-workflow` |
-| `refactor/` | Refactorización sin cambio funcional | `refactor/section-header` |
-| `test/` | Pruebas | `test/generator-server` |
+Patrón: `^dev-[a-z0-9]+(-[a-z0-9]+)*$`
+
+| Tipo de trabajo | Ejemplo |
+|---|---|
+| Nueva funcionalidad | `dev-vista-previa-visual` |
+| Corrección | `dev-perdida-datos-cliente` |
+| Problema crítico | `dev-seguridad-generador` |
+| Documentación | `dev-convencion-ramas` |
+| Refactorización | `dev-encabezado-secciones` |
+| Pruebas | `dev-tests-generador` |
+| Mantenimiento | `dev-cambios-nuevos` |
+
+El tipo de cambio lo indica el commit (Conventional Commits), no el nombre de la rama.
+Ramas antiguas con prefijos `feature/`, `fix/`, `docs/`, `chore/`… son históricas: no crees más.
 
 Toda rama parte de `origin/produccion` actualizado, salvo dependencia explícita de otra rama (indícala
 en el PR, campo *Related Pull Request(s)*).
@@ -83,7 +90,7 @@ git branch --show-current
 git fetch origin --prune
 
 # 4. Crear rama SIN upstream a produccion
-git switch -c fix/client-data-loss --no-track origin/produccion
+git switch -c dev-perdida-datos-cliente --no-track origin/produccion
 
 # 5. Implementar solo el alcance pedido (Skill web-esencial para el producto)
 
@@ -102,10 +109,10 @@ git add <archivos>
 git commit -m "fix: preserve client configuration when saving"
 
 # 11. Publicar la rama con su MISMO nombre
-git push -u origin fix/client-data-loss
+git push -u origin dev-perdida-datos-cliente
 
 # 12. PR contra produccion con la plantilla rellenada
-gh pr create --base produccion --head fix/client-data-loss \
+gh pr create --base produccion --head dev-perdida-datos-cliente \
   --title "fix: preserve client configuration when saving" --body-file <ruta-temporal>.md
 
 # 13. Informar al propietario: URL del PR, validaciones ejecutadas, riesgos
@@ -179,9 +186,9 @@ El mensaje empieza por `[guard-produccion] OPERACIÓN BLOQUEADA` (hook) o indica
    - Era una operación legítima en una rama de trabajo (p. ej. `git push` sin refspec en una rama cuyo
      upstream es `produccion`) → usa la forma explícita: `git push -u origin <tu-rama>`.
 4. Si crees que es un falso positivo, informa al propietario con el comando y el motivo exacto; él decide si
-   lo ejecuta en persona o si se ajusta el hook (en una rama `chore/`, con tests).
+   lo ejecuta en persona o si se ajusta el hook (en una rama `dev-…`, con tests).
 
 ## Hotfix
 
-Igual que el flujo normal con prefijo `hotfix/`, alcance mínimo, PR con *Riesgos* explícitos. La urgencia
+Igual que el flujo normal (rama `dev-…`, p. ej. `dev-hotfix-whatsapp`), alcance mínimo, PR con *Riesgos* explícitos. La urgencia
 no autoriza push ni merge directos a `produccion`.
