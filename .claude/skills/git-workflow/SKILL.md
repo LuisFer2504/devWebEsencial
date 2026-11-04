@@ -99,6 +99,12 @@ npm test && npm run type-check && npm run lint
 CLIENT_ID=<id> npm run build          # por cada cliente/variante afectada
 #   PowerShell: $env:CLIENT_ID='<id>'; npm run build
 
+# 7b. Verificación en navegador con MCP (obligatoria si el PR toca código: src/, clients/,
+#     tools/generator/, public/, configuración de build o dependencias)
+npm run qa:build && npm run qa:serve  # luego Chrome DevTools MCP: móvil + escritorio, page-audit,
+                                      # consola, Lighthouse, traza; editor: cargar/guardar sin pérdidas
+#   Procedimiento completo: .claude/skills/web-esencial/references/MCP_VERIFICATION.md
+
 # 8-9. Revisar el diff y buscar archivos sensibles o generados
 git status
 git diff
@@ -119,6 +125,14 @@ gh pr create --base produccion --head dev-perdida-datos-cliente \
 ```
 
 Usa un archivo temporal fuera del repo para el cuerpo del PR (directorio scratchpad/temporal).
+
+### Verificación MCP por cada cambio grande
+Cada cambio completo que interfiera con el código (una funcionalidad, una corrección o un lote de
+correcciones que irá en su propio PR) se verifica con el MCP de Chrome DevTools **antes** de abrir el PR,
+para comprobar que nada se rompió y que el resultado está listo para la venta. El resultado se registra en
+el PR (sección *Validación* → "Verificación MCP"). Sin esa verificación el PR no se presenta como listo:
+si el MCP no funciona y no hay alternativa, ábrelo como **draft** y dilo. Los PRs solo de documentación
+no la requieren.
 
 ### Si las validaciones fallan
 No abras el PR. Informa del fallo con la salida real. Excepción: el usuario pide expresamente un PR de

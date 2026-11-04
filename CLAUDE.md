@@ -30,6 +30,7 @@ src/components/shared/       Navbar (client component), ContactSection, Footer, 
 src/components/variants/     ProfessionalTheme, CommerceTheme, BeautyTheme, ArtistTheme
 src/utils/                   whatsapp.ts (wa.me), media.ts (embeds YouTube/Vimeo)
 tools/generator/             Editor local: server.mjs (Node http, :3001) + index.html (vanilla JS)
+tools/qa/                    QA local: build-all, serve (gzip) y page-audit para verificar con MCP
 tests/                       Vitest (producto + guardia de producción)
 .claude/                     Skills, settings.json compartido y hooks de seguridad
 ```
@@ -44,13 +45,15 @@ tests/                       Vitest (producto + guardia de producción)
 | `npm test` | Vitest |
 | `npm run type-check` | `tsc --noEmit` |
 | `npm run lint` | `next lint` |
+| `npm run qa:build` / `qa:serve` | Compila todos los clientes en `.qa/` y los sirve para verificar con MCP |
 
 En PowerShell: `$env:CLIENT_ID='demo-artist'; npm run build`. Sin `CLIENT_ID` se usa
 **silenciosamente** `demo-professional`. `npm start` no sirve con `output: "export"`; para ver `out/`
 usa un servidor estático.
 
 Validación mínima antes de entregar cualquier cambio: `npm test && npm run type-check && npm run lint`
-y `npm run build` para **cada** cliente afectado.
+y `npm run build` para **cada** cliente afectado. Además, todo PR que toque código se verifica en navegador
+con el MCP de Chrome DevTools antes de abrirse (`references/MCP_VERIFICATION.md` de la Skill `web-esencial`).
 
 ## Git y Pull Requests
 

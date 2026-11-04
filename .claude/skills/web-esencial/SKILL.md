@@ -109,6 +109,14 @@ PowerShell: `$env:CLIENT_ID='<id>'; npm run build`. Ver `references/TESTING.md`.
 Nunca declares algo terminado sin ejecutar esto; nunca inventes resultados. No modifiques código para
 ocultar un error preexistente: repórtalo.
 
+### Verificación con MCP (obligatoria antes de cada PR de código)
+Todo cambio grande que llegue al sitio o al editor se comprueba en un navegador real con el MCP de
+Chrome DevTools antes de abrir el PR: `npm run qa:build` + `npm run qa:serve`, capturas en móvil y
+escritorio, `tools/qa/page-audit.js` con `evaluate_script`, consola, Lighthouse y traza de rendimiento; y
+si toca el editor, la prueba de cargar/guardar sin pérdidas. El objetivo es que quede **listo para vender**,
+no solo que compile. Procedimiento, umbrales y alternativa si el MCP falla:
+`references/MCP_VERIFICATION.md`.
+
 ## 8. Preparar una entrega a cliente
 
 Checklist en `references/DEPLOYMENT.md` (build limpio, contenido real, imágenes propias, SEO,
@@ -138,5 +146,6 @@ WhatsApp probado en móvil, Lighthouse, dominio). No despliegues sin autorizaci�
 | `references/GENERATOR.md` | Editor local: API, UI, limitaciones, riesgos |
 | `references/DEPLOYMENT.md` | Build, exportación, Vercel, checklist de entrega |
 | `references/TESTING.md` | Suite actual, cobertura, cómo verificar |
+| `references/MCP_VERIFICATION.md` | Verificación en navegador con MCP antes de cada PR de código |
 | `references/COMMERCIAL_READINESS.md` | Evaluación para venta |
 | `references/ROADMAP.md` | P0–P3 con criterios de aceptación |
