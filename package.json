@@ -9,7 +9,9 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
-    "generate": "node --experimental-strip-types tools/generator/server.mjs"
+    "generate": "node --experimental-strip-types tools/generator/server.mjs",
+    "qa:build": "node tools/qa/build-all.mjs",
+    "qa:serve": "node tools/qa/serve.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.61.0",
