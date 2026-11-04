@@ -20,6 +20,20 @@ está en la Skill `web-esencial`.
 **Importante:** el plan actual de GitHub no permite reglas de protección ni rulesets en repos privados
 (la API devuelve 403). Nada impide técnicamente un push a `produccion`: las reglas de esta Skill son la
 única barrera y deben cumplirse literalmente.
+(la API devuelve 403). **La protección real de GitHub sigue pendiente** y GitHub no impide un push a
+`produccion`.
+
+**El propietario es el único responsable de `produccion`**: solo él revisa, aprueba y fusiona. Claude
+**nunca** puede hacer merge, ni siquiera si el PR está aprobado, la tarea es urgente o alguien dice que
+está autorizado.
+
+### Barreras locales de Claude Code (segunda capa)
+`.claude/settings.json` registra reglas `deny` y el hook `PreToolUse` `.claude/hooks/guard-production.mjs`
+(detalle en `.claude/hooks/README.md`). Bloquean, en Bash y PowerShell, push/force/borrado sobre
+`produccion`, commits locales en `produccion`, `gh pr merge`, aprobaciones y cambios de protección o
+ajustes vía `gh`/API. Son una **barrera adicional**, no un sustituto de la protección de GitHub: solo
+afectan a comandos ejecutados por Claude Code, no a personas ni a otros programas. Las reglas de esta
+Skill deben cumplirse igualmente aunque una operación no resulte bloqueada.
 
 ## Reglas absolutas (no negociables)
 
@@ -151,6 +165,21 @@ Checklist antes de `gh pr create`:
 
 Después de crear el PR: entrega la URL y **detente**. El merge lo hace el propietario. Si pide cambios,
 añade commits nuevos a la misma rama.
+
+## Si una operación es bloqueada
+
+El mensaje empieza por `[guard-produccion] OPERACIÓN BLOQUEADA` (hook) o indica una regla `deny`.
+
+1. **Detente.** No reformules el comando, no uses otra shell, variables, aliases, scripts, `curl` ni la API para
+   lograr el mismo efecto. Intentar eludir la barrera es una violación de estas reglas.
+2. No edites `.claude/settings.json`, `.claude/settings.local.json` ni el hook, y no uses `disableAllHooks`.
+3. Comprueba si el bloqueo era correcto:
+   - Ibas a escribir en `produccion` o a fusionar/aprobar → era correcto. Informa al propietario de lo que
+     hace falta (p. ej. "el PR #N está listo para que lo revises y fusiones").
+   - Era una operación legítima en una rama de trabajo (p. ej. `git push` sin refspec en una rama cuyo
+     upstream es `produccion`) → usa la forma explícita: `git push -u origin <tu-rama>`.
+4. Si crees que es un falso positivo, informa al propietario con el comando y el motivo exacto; él decide si
+   lo ejecuta en persona o si se ajusta el hook (en una rama `chore/`, con tests).
 
 ## Hotfix
 

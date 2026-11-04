@@ -30,7 +30,8 @@ src/components/shared/       Navbar (client component), ContactSection, Footer, 
 src/components/variants/     ProfessionalTheme, CommerceTheme, BeautyTheme, ArtistTheme
 src/utils/                   whatsapp.ts (wa.me), media.ts (embeds YouTube/Vimeo)
 tools/generator/             Editor local: server.mjs (Node http, :3001) + index.html (vanilla JS)
-tests/                       Vitest (13 tests)
+tests/                       Vitest (producto + guardia de producción)
+.claude/                     Skills, settings.json compartido y hooks de seguridad
 ```
 
 ## Comandos
@@ -58,6 +59,9 @@ Repo `LuisFer2504/devWebEsencial` (privado), rama principal `produccion`. **Carg
 Resumen: rama `<feature|fix|hotfix|docs|refactor|test>/<kebab-case>` desde `origin/produccion`,
 Conventional Commits, PR con `.github/pull_request_template.md`. Nunca commit/push a `produccion`,
 nunca `gh pr merge` ni aprobar PRs: el merge lo hace solo el propietario.
+nunca `gh pr merge` ni aprobar PRs: el merge lo hace solo el propietario. Un hook local
+(`.claude/hooks/guard-production.mjs`, ver `.claude/hooks/README.md`) bloquea esas operaciones como
+segunda capa; no sustituye la protección de GitHub (pendiente). Si algo se bloquea, no lo eludas: informa.
 
 ## Despliegue
 
