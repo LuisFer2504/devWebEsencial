@@ -61,7 +61,6 @@ Repo `LuisFer2504/devWebEsencial` (privado), rama principal `produccion`. **Carg
 `git-workflow`** (`.claude/skills/git-workflow/SKILL.md`) antes de crear ramas, commits o PRs.
 Resumen: rama `dev-<descripcion-con-guiones>` (ej. `dev-cambios-nuevos`) desde `origin/produccion`,
 Conventional Commits, PR con `.github/pull_request_template.md`. Nunca commit/push a `produccion`,
-nunca `gh pr merge` ni aprobar PRs: el merge lo hace solo el propietario.
 nunca `gh pr merge` ni aprobar PRs: el merge lo hace solo el propietario. Un hook local
 (`.claude/hooks/guard-production.mjs`, ver `.claude/hooks/README.md`) bloquea esas operaciones como
 segunda capa; no sustituye la protección de GitHub (pendiente). Si algo se bloquea, no lo eludas: informa.

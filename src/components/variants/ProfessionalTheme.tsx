@@ -1,9 +1,11 @@
+import { preload } from "react-dom";
 import type { ClientConfig } from "@/types/client";
 import { Navbar } from "@/components/shared/Navbar";
 import { ContactSection } from "@/components/shared/ContactSection";
 import { WhatsAppFloatingButton } from "@/components/shared/WhatsAppFloatingButton";
 import { Footer } from "@/components/shared/Footer";
 import { buildWhatsAppLink } from "@/utils/whatsapp";
+import { readableTextColor } from "@/utils/color";
 import {
   CheckCircle2,
   ShieldCheck,
@@ -27,12 +29,21 @@ export function ProfessionalTheme({ config }: ProfessionalThemeProps) {
   const showServices = sectionVisibility?.services !== false && services && services.length > 0;
   const showAdvantages = sectionVisibility?.advantages !== false && advantages && advantages.length > 0;
 
-  // Comprobar si el hero tiene imagen o destacados propios para el panel lateral
-  const hasSidePanel = Boolean(hero.heroImage || (about.highlights && about.highlights.length >= 2));
+  // Panel lateral del hero: imagen de portada o, si no hay, los puntos destacados del cliente.
+  const highlights = about.highlights ?? [];
+  const highlightsInHero = !hero.heroImage && highlights.length >= 2;
+  const hasSidePanel = Boolean(hero.heroImage) || highlightsInHero;
+  // Si los destacados ya están en el hero, "Nosotros" no los repite.
+  const showAboutHighlights = highlights.length > 0 && !highlightsInHero;
+  const highlightsTitle = sectionTitles?.aboutTitle || "Aspectos Destacados";
+
+  // La imagen de portada es el elemento más grande de la primera pantalla (LCP): se descarga cuanto antes.
+  if (hero.heroImage) preload(hero.heroImage, { as: "image", fetchPriority: "high" });
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 antialiased selection:bg-slate-900 selection:text-white">
       <Navbar config={config} />
+      <main>
 
       {/* Hero Section */}
       <section
@@ -64,7 +75,7 @@ export function ProfessionalTheme({ config }: ProfessionalThemeProps) {
               <div className="mt-8 flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
                 <a
                   href={hero.ctaPrimary.link}
-                  style={{ backgroundColor: colors.primary }}
+                  style={{ backgroundColor: colors.primary, color: readableTextColor(colors.primary) }}
                   className="inline-flex items-center justify-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold text-white shadow-md transition-all hover:brightness-110 focus:outline-none focus:ring-4 focus:ring-blue-200"
                 >
                   <span>{hero.ctaPrimary.text}</span>
@@ -91,18 +102,19 @@ export function ProfessionalTheme({ config }: ProfessionalThemeProps) {
                     <img
                       src={hero.heroImage}
                       alt={hero.title}
+                      fetchPriority="high"
                       className="w-full h-80 object-cover"
                     />
                   </div>
                 ) : (
                   <div className="rounded-2xl border border-slate-200 bg-slate-50/90 p-8 shadow-sm">
                     <h2 className="text-xl font-bold text-slate-900 mb-4">
-                      {about.title}
+                      {highlightsTitle}
                     </h2>
                     <div className="space-y-3">
-                      {about.highlights?.map((hl, i) => (
-                        <div key={i} className="flex items-start gap-3 rounded-lg bg-white p-3.5 border border-slate-200/70 shadow-2xs">
-                          <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                      {highlights.map((hl, i) => (
+                        <div key={i} className="flex items-start gap-3 rounded-lg bg-white p-3.5 border border-slate-200/70 shadow-sm">
+                          <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" aria-hidden="true" />
                           <p className="text-sm text-slate-700 leading-snug">{hl}</p>
                         </div>
                       ))}
@@ -120,7 +132,7 @@ export function ProfessionalTheme({ config }: ProfessionalThemeProps) {
       {showAbout && (
         <section id="nosotros" className="scroll-mt-20 py-20 bg-slate-50">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className={`grid grid-cols-1 ${about.highlights && about.highlights.length > 0 ? "lg:grid-cols-2 gap-12" : "max-w-3xl"} items-center`}>
+            <div className={`grid grid-cols-1 ${showAboutHighlights ? "lg:grid-cols-2 gap-12" : "max-w-3xl"} items-center`}>
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-blue-700 mb-2">
                   {sectionTitles?.aboutSubtitle || "Conócenos"}
@@ -133,13 +145,13 @@ export function ProfessionalTheme({ config }: ProfessionalThemeProps) {
                 </p>
               </div>
 
-              {about.highlights && about.highlights.length > 0 && (
+              {showAboutHighlights && (
                 <div className="rounded-2xl bg-white p-8 border border-slate-200 shadow-sm">
                   <h3 className="text-lg font-bold text-slate-900 mb-6">
-                    {sectionTitles?.aboutTitle || "Aspectos Destacados"}
+                    {highlightsTitle}
                   </h3>
                   <ul className="space-y-4">
-                    {about.highlights.map((highlight, idx) => (
+                    {highlights.map((highlight, idx) => (
                       <li key={idx} className="flex items-start gap-3 text-slate-700">
                         <CheckCircle2 className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" aria-hidden="true" />
                         <span className="text-sm sm:text-base">{highlight}</span>
@@ -201,7 +213,7 @@ export function ProfessionalTheme({ config }: ProfessionalThemeProps) {
                       {service.price ? (
                         <span className="text-sm font-semibold text-slate-900">{service.price}</span>
                       ) : (
-                        <span className="text-xs font-medium text-slate-500">Consultar</span>
+                        <span className="text-xs font-medium text-slate-600">Consultar</span>
                       )}
 
                       <a
@@ -263,7 +275,8 @@ export function ProfessionalTheme({ config }: ProfessionalThemeProps) {
         </section>
       )}
 
-      <ContactSection config={config} />
+        <ContactSection config={config} />
+      </main>
       <Footer config={config} />
       <WhatsAppFloatingButton contact={contact} />
     </div>

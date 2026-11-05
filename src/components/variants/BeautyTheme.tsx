@@ -4,6 +4,7 @@ import { ContactSection } from "@/components/shared/ContactSection";
 import { WhatsAppFloatingButton } from "@/components/shared/WhatsAppFloatingButton";
 import { Footer } from "@/components/shared/Footer";
 import { buildWhatsAppLink } from "@/utils/whatsapp";
+import { readableTextColor } from "@/utils/color";
 import {
   Sparkles,
   Clock,
@@ -32,6 +33,7 @@ export function BeautyTheme({ config }: BeautyThemeProps) {
   return (
     <div className="min-h-screen bg-rose-50/30 text-rose-950 antialiased selection:bg-pink-100 selection:text-pink-900">
       <Navbar config={config} />
+      <main>
 
       {/* Hero Editorial & Sensorial */}
       <section id="inicio" className="relative overflow-hidden bg-white pt-16 pb-20 lg:pt-24 lg:pb-28">
@@ -60,7 +62,7 @@ export function BeautyTheme({ config }: BeautyThemeProps) {
                 href={waBookingLink || hero.ctaPrimary.link}
                 target={waBookingLink ? "_blank" : undefined}
                 rel={waBookingLink ? "noopener noreferrer" : undefined}
-                style={{ backgroundColor: colors.primary }}
+                style={{ backgroundColor: colors.primary, color: readableTextColor(colors.primary) }}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-full px-9 py-4 text-sm font-semibold tracking-wide text-white shadow-md shadow-pink-500/20 transition-all hover:brightness-105 hover:shadow-lg focus:outline-none"
               >
                 <CalendarCheck className="h-4 w-4" />
@@ -70,7 +72,7 @@ export function BeautyTheme({ config }: BeautyThemeProps) {
               {hero.ctaSecondary && (
                 <a
                   href={hero.ctaSecondary.link}
-                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-rose-200 bg-white px-8 py-4 text-sm font-medium text-rose-900 shadow-2xs hover:bg-rose-50/50"
+                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-rose-200 bg-white px-8 py-4 text-sm font-medium text-rose-900 shadow-sm hover:bg-rose-50/50"
                 >
                   {hero.ctaSecondary.text}
                 </a>
@@ -121,7 +123,7 @@ export function BeautyTheme({ config }: BeautyThemeProps) {
                 return (
                   <div
                     key={service.id}
-                    className="group rounded-3xl bg-white p-7 sm:p-8 border border-pink-100 shadow-xs transition-all hover:shadow-md hover:border-pink-200 flex flex-col md:flex-row md:items-center justify-between gap-6"
+                    className="group rounded-3xl bg-white p-7 sm:p-8 border border-pink-100 shadow-sm transition-all hover:shadow-md hover:border-pink-200 flex flex-col md:flex-row md:items-center justify-between gap-6"
                   >
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -139,7 +141,7 @@ export function BeautyTheme({ config }: BeautyThemeProps) {
                         {service.description}
                       </p>
 
-                      <div className="mt-3 flex items-center gap-4 text-xs text-stone-500">
+                      <div className="mt-3 flex items-center gap-4 text-xs text-stone-600">
                         {service.duration && (
                           <span className="flex items-center gap-1">
                             <Clock className="h-3.5 w-3.5 text-pink-500" />
@@ -217,7 +219,7 @@ export function BeautyTheme({ config }: BeautyThemeProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {advantages.map((adv, idx) => (
-                <div key={idx} className="rounded-3xl bg-white p-7 border border-pink-100 shadow-2xs">
+                <div key={idx} className="rounded-3xl bg-white p-7 border border-pink-100 shadow-sm">
                   <div className="h-10 w-10 rounded-full bg-pink-100 text-pink-700 flex items-center justify-center mb-4">
                     <Shield className="h-5 w-5" />
                   </div>
@@ -230,7 +232,8 @@ export function BeautyTheme({ config }: BeautyThemeProps) {
         </section>
       )}
 
-      <ContactSection config={config} />
+        <ContactSection config={config} />
+      </main>
       <Footer config={config} />
       <WhatsAppFloatingButton contact={contact} />
     </div>
