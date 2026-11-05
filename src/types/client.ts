@@ -3,6 +3,8 @@ export type {
   ClientVariant,
   ServiceItem,
   AdvantageItem,
+  TrustBadge,
+  TrustBadgeIcon,
   GalleryItem,
   VideoItem,
   EventItem,

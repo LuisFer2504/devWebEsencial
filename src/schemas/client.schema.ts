@@ -21,6 +21,17 @@ export const AdvantageItemSchema = z.object({
 });
 export type AdvantageItem = z.infer<typeof AdvantageItemSchema>;
 
+// Cinta de beneficios breves (p. ej. envíos, medios de pago). Solo se muestra si el cliente la define.
+export const TrustBadgeIconSchema = z.enum(["truck", "card", "shield", "clock", "tag", "star", "phone", "map"]);
+export type TrustBadgeIcon = z.infer<typeof TrustBadgeIconSchema>;
+
+export const TrustBadgeSchema = z.object({
+  title: z.string().min(2, "El título del beneficio es requerido"),
+  description: z.string().optional(),
+  icon: TrustBadgeIconSchema.optional(),
+});
+export type TrustBadge = z.infer<typeof TrustBadgeSchema>;
+
 // Esquemas específicos para variante Artist
 export const GalleryItemSchema = z.object({
   id: z.string().min(1, "ID de imagen requerido"),
@@ -198,6 +209,7 @@ export const ClientConfigSchema = z.object({
   // Listas con compatibilidad amplia: pueden ser vacías si el rubro usa otras secciones (como artist)
   services: z.array(ServiceItemSchema).default([]),
   advantages: z.array(AdvantageItemSchema).default([]),
+  trustBadges: z.array(TrustBadgeSchema).optional(),
   // Secciones específicas de Artistas (opcionales)
   artistProfile: ArtistProfileSchema.optional(),
   gallery: z.array(GalleryItemSchema).optional(),
