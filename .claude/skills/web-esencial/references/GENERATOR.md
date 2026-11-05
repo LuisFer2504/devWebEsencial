@@ -1,81 +1,89 @@
 # Generator — editor local (`tools/generator/`)
 
+Herramienta **interna** para crear y editar `clients/<id>.json`. Nunca se despliega ni se importa desde
+`src/`. Actualizado en la rama `dev-estabilizacion-tecnica`.
+
 ## Arranque
 
 `npm run generate` → `node --experimental-strip-types tools/generator/server.mjs` → http://localhost:3001
-(bind `127.0.0.1`, puerto fijo 3001). Requiere Node ≥ 22.6 por la importación directa de
-`src/schemas/client.schema.ts`. Emite avisos `ExperimentalWarning` y `MODULE_TYPELESS_PACKAGE_JSON`
-(inofensivos, verificados con Node 22.12).
+(solo `127.0.0.1`; puerto configurable con `GENERATOR_PORT`). Requiere Node ≥ 22.6 por la importación
+directa de `src/schemas/client.schema.ts`.
 
-## API (`server.mjs`)
+## Archivos
+
+| Archivo | Función |
+|---|---|
+| `server.mjs` | Servidor HTTP; exporta `createGeneratorServer({ clientsDir, backupsDir, token })` (usado por los tests) y arranca solo si se ejecuta directamente |
+| `form-model.js` | Lógica pura del formulario (sin DOM), usable en navegador (`window.FormModel`) y en Node (`require`) |
+| `index.html` | Interfaz: conecta inputs ↔ `FormModel`; Tailwind por CDN (solo herramienta local) |
+
+## API
 
 | Método y ruta | Comportamiento |
 |---|---|
-| `GET /` , `/index.html` | Sirve la UI |
-| `GET /api/clients` | Lista `clients/*.json` (sin extensión) |
-| `GET /api/client/:id` | Devuelve el JSON tal cual (sin validar); id saneado |
-| `POST /api/save` `{config, overwrite}` | Valida slug → `ClientConfigSchema.safeParse` (422 con `details[]`) → comprueba que la ruta quede dentro de `clients/` → 409 si existe y `overwrite` es falso → escribe `JSON.stringify(parsed, null, 2)` |
-| `OPTIONS *` | Preflight CORS |
+| `GET /`, `/index.html` | Editor con el token de sesión inyectado en `<meta name="generator-token">` |
+| `GET /form-model.js` | Modelo del formulario |
+| `GET /api/clients` | Lista de ids válidos de `clients/` |
+| `GET /api/client/:id` | JSON del cliente (id estricto; 400 inválido, 404 inexistente, 422 JSON corrupto) |
+| `POST /api/save` `{ config, overwrite? }` | Valida y guarda (ver abajo) |
 
-Todas las respuestas JSON llevan `Access-Control-Allow-Origin: *`. Límite de cuerpo 1 MB (`req.destroy()`
-sin respuesta). No hay autenticación ni comprobación de `Origin`/`Host`.
+Cualquier otra ruta → 404; métodos no permitidos → 405.
 
-## UI (`index.html`)
+## Seguridad (capas)
 
-- Tailwind por CDN (`cdn.tailwindcss.com`) — aceptable para herramienta interna, requiere internet.
-- 10 pestañas: Identidad & Rubro, Portada & Hero, Biografía/Nosotros, Servicios/Paquetes,
-  Fotos & Videos, Presentaciones, Ventajas, Contacto, Visibilidad/Títulos/SEO, Guardar.
-- Estado en memoria `currentConfig`; listas renderizadas con `innerHTML` y botones ▲/▼/✕.
-- Al iniciar carga automáticamente `demo-artist`. "+ Nuevo" precarga un artista de ejemplo.
-- "Vista previa" = JSON formateado + 4 tarjetas resumen. **No hay preview visual del sitio.**
-- Sin persistencia local (recargar la página pierde cambios no guardados).
+1. **Solo local:** escucha en `127.0.0.1`; la cabecera `Host` debe ser `127.0.0.1:<puerto>`,
+   `localhost:<puerto>` o `[::1]:<puerto>` → bloquea *DNS rebinding* (403).
+2. **Autorización:** token aleatorio de 256 bits por sesión, exigido en la cabecera `X-Generator-Token`
+   en toda `/api/*` (401 si falta o no coincide; comparación en tiempo constante). Una web externa no
+   puede leer el token (no hay CORS) ni enviar cabeceras personalizadas sin un *preflight*, que se rechaza.
+3. **Mismo origen:** se rechaza (403) un `Origin` distinto del propio y `Sec-Fetch-Site` distinto de
+   `same-origin`/`none`. No se envía ninguna cabecera `Access-Control-*`.
+4. **Validación de peticiones:** `Content-Type: application/json` (415), cuerpo ≤ 1 MB (413), JSON válido
+   (400), `config` objeto y `overwrite` booleano (400), id `^[a-z0-9]+(-[a-z0-9]+)*$` sin transformarlo
+   (400), esquema Zod (422 con `details[]` por campo).
+5. **Escritura de archivos:** ruta resuelta y confinada a `clients/` (comparación de carpeta real), rechazo de
+   enlaces simbólicos y no-archivos (403), escritura **atómica** (temporal + `rename`), **copia de
+   seguridad** del archivo anterior en `.generator-backups/<id>.<fecha>.json` (ignorado por git) y
+   confirmación explícita para sobrescribir (409 sin `overwrite: true`).
+6. **Interfaz:** lista blanca de archivos servidos; cabeceras `Content-Security-Policy`
+   (`frame-ancestors 'none'`, `connect-src 'self'`…), `X-Frame-Options: DENY`, `nosniff`,
+   `Referrer-Policy: no-referrer`, `Cache-Control: no-store`; todo texto dinámico se escapa (`esc()`).
 
-## Limitaciones verificadas (lectura de código + script sobre `clients/`)
+Modelo de amenaza: herramienta de un solo usuario en su propio equipo. El token protege frente a páginas
+web abiertas en el mismo navegador; no frente a malware que ya controle el equipo.
 
-### Pérdida de datos al cargar y volver a guardar
-`collectFormData()` reconstruye objetos completos en vez de fusionar. Se pierden o alteran:
+## Conservación de datos
 
-| Campo | Efecto |
-|---|---|
-| `colors.accent`, `colors.neutralBg` | Eliminados (4 de 5 clientes los tienen) |
-| `contact.googleMapsUrl` | Eliminado (demo-professional, demo-commerce, demo-beauty) |
-| `seo.ogImage`, `about.aboutImage` | Eliminados |
-| `sectionTitles` | Solo se conservan 4 de 22 claves |
-| `artistProfile` | Se crea **en todas las variantes**; `stageName` = `businessName`; `bio` = `about.description` (sobrescribe la bio de demo-artist); `achievements` = highlights; `bioShort` se pierde |
-| `packages[].ctaText/ctaLink` | Eliminados; `visible` forzado a `true` |
-| `events[].description` | Eliminado; `visible` forzado a `true`; ids regenerados |
-| `videos[]`, `gallery[]` | ids regenerados en cada guardado; `platform` forzado a `youtube`; `isFeatured` eliminado |
-| `services[].icon`, `advantages[].icon` | Eliminados |
-| `colors.primaryHover` | Siempre presente (lo rellena el formulario) |
+`buildConfig(base, form, drafts)` parte del JSON cargado y solo modifica los campos que el formulario
+muestra:
+- campos sin control en el editor (`colors.accent`, `neutralBg`, `contact.googleMapsUrl`, `seo.ogImage`,
+  `trustBadges`, los títulos no editables, `about.aboutImage`, `artistProfile.bio/stageName/bioShort`…) se
+  conservan tal cual;
+- cada elemento de lista conserva todos sus campos (`id`, `icon`, `visible`, `platform`, `ctaText`,
+  `ctaLink`, `description` de eventos, `isFeatured`…);
+- un campo opcional vaciado se elimina; uno obligatorio vaciado llega a Zod, que lo reporta;
+- no se añaden claves que el original no tenía (`artistProfile` solo en artist o si ya existía;
+  `sectionVisibility` solo si existía o se oculta algo);
+- al guardar se descartan solo los elementos **totalmente vacíos**; los incompletos se reportan;
+- en artist, los destacados se guardan en `artistProfile.achievements`; en el resto, en `about.highlights`;
+- características de paquetes: **una por línea** (pueden contener comas).
 
-Resultado del script de comprobación: `demo-artist`, `demo-beauty`, `demo-commerce` y
-`demo-professional` perderían datos al re-guardarse; `consultoria-proyectos` no (salvo la inyección de
-`artistProfile`).
+Las acciones ▲/▼/✕/Agregar sincronizan primero los inputs con el modelo, sin filtrar elementos.
 
-### Otros
-- Interpolación sin escapar en plantillas `innerHTML` (`value="${...}"`): un texto con comillas `"` se
-  corta al re-renderizar la lista; los mensajes de validación (`d.field`, `d.message`) también se insertan
-  como HTML. Riesgo de corrupción de datos y XSS local.
-- La variante por defecto si no hay radio marcado es `artist`.
-- Fecha de evento en texto libre; ids de servicio por defecto `srv-${Date.now()}` (colisionan si se crean
-  varios en el mismo ms).
-- `tests/generator-api.test.ts` **no** prueba `server.mjs`: reimplementa el handler dentro del test.
+Verificado en `tests/generator-form.test.ts`: cargar y guardar sin cambios cada `clients/*.json` produce un
+objeto **idéntico** al original.
 
-## Riesgo de seguridad (verificado)
-
-`OPTIONS /api/save` con `Origin: https://evil.example` responde `Access-Control-Allow-Origin: *`.
-Mientras el generador está corriendo, cualquier sitio web abierto en el navegador puede leer los
-clientes y escribir/sobrescribir `clients/*.json` (con `overwrite: true`). Mitigación propuesta
-(ROADMAP P0): eliminar CORS (la UI es same-origin), validar `Origin`/`Host` contra
-`localhost:3001`/`127.0.0.1:3001`, y opcionalmente un token aleatorio por sesión.
+## Limitaciones conocidas (pendientes, Fase 1.5 del plan comercial)
+- Muchos campos del esquema no tienen control en el editor (se conservan, pero se editan a mano).
+- En artist, `about.description` y `artistProfile.bio` son independientes: el sitio muestra `bio` si
+  existe, pero el editor solo edita `about.description`.
+- "+ Nuevo" parte siempre de una plantilla de artista.
+- La lista de clientes no se refresca si se borra un archivo fuera del editor.
+- Sin vista previa visual (solo JSON y resumen).
 
 ## Reglas para modificarlo
-
-1. Un campo nuevo del esquema requiere: control en el HTML, `populateForm`, `collectFormData` y, si es
-   lista, `render*` con escape de HTML.
-2. Fusionar sobre `currentConfig` (`{...currentConfig.x, ...valoresDelFormulario}`) para no perder
-   campos que el formulario no gestiona.
-3. No quitar: regex de slug, Zod, chequeo de ruta, 409 de sobrescritura, bind a `127.0.0.1`.
-4. El generador nunca debe importarse desde `src/` ni copiarse a `public/`.
-5. Tras cambios: `npm run generate`, cargar cada demo, guardar con otro id y comparar el JSON
-   resultante con el original (`git diff --no-index`).
+1. Un campo nuevo editable: control en el HTML + `formFromConfig`/`buildConfig` (o `LISTS`) + test.
+2. Nunca reconstruir objetos: fusionar sobre el original con `setOrDelete`.
+3. Todo `innerHTML` con datos pasa por `esc()`.
+4. No quitar ninguna capa de seguridad; cualquier cambio en `server.mjs` debe ir con su test.
+5. Tras cambios: `npm test` y verificación MCP (`MCP_VERIFICATION.md` §3: cargar y guardar cada cliente).

@@ -25,7 +25,7 @@ CLIENT_ID=<id> next build
 |---|---|---|
 | `src/schemas/client.schema.ts` | Contrato Zod de un cliente y sub-esquemas | Única fuente de tipos (`z.infer`). Usado por app, tests y generador |
 | `src/types/client.ts` | Re-export de tipos | Solo `export type` |
-| `src/config/client-loader.ts` | `getActiveClientId()` (env `CLIENT_ID` o `NEXT_PUBLIC_CLIENT_ID`, fallback `demo-professional`) y `loadClientConfig(id)` | Usa `node:fs`; solo en Server Components / build. Se llama 3 veces por build (metadata, layout, page), sin caché |
+| `src/config/client-loader.ts` | `getActiveClientId()` (vía `client-id.ts`: `CLIENT_ID` obligatorio en builds) y `loadClientConfig(id)` (id estricto, debe coincidir con el archivo) | Usa `node:fs`; solo en Server Components / build. Se llama 3 veces por build (metadata, layout, page), sin caché |
 | `src/app/layout.tsx` | Metadatos (`generateMetadata`), `<html lang="es">`, inyección de `--brand-primary`, `--brand-primary-hover`, `--brand-accent` | Las CSS vars no se usan en ningún componente ni en `tailwind.config.ts` |
 | `src/app/page.tsx` | Selección de variante | `default` → Professional |
 | `src/components/shared/Navbar.tsx` | Cabecera sticky, menú móvil, CTA WhatsApp | Único `"use client"` (estado del menú). Recibe el `config` completo (todo es público) |
@@ -35,7 +35,7 @@ CLIENT_ID=<id> next build
 | `src/components/variants/*Theme.tsx` | Composición completa de la página por variante | Server Components; cada una compone shared + secciones propias |
 | `src/utils/whatsapp.ts` | `buildWhatsAppLink(phone, msg)` → `https://wa.me/<dígitos>?text=` | Quita todo lo no numérico (no añade código de país) |
 | `src/utils/media.ts` | `getEmbedVideoUrl(url)` → YouTube nocookie / Vimeo player o `null` | Spotify no se embebe (se muestra enlace externo) |
-| `tools/generator/server.mjs` | API local: `GET /`, `GET /api/clients`, `GET /api/client/:id`, `POST /api/save` | `127.0.0.1:3001`, CORS `*`, límite 1 MB |
+| `tools/generator/server.mjs` | API local: `GET /`, `GET /api/clients`, `GET /api/client/:id`, `POST /api/save` | `127.0.0.1:3001`, Host local, token de sesión, sin CORS, 1 MB, copias de seguridad |
 | `tools/generator/index.html` | UI del editor (10 pestañas), vanilla JS, Tailwind CDN | Ver GENERATOR.md |
 
 ## Límites y aislamiento
@@ -52,7 +52,7 @@ CLIENT_ID=<id> next build
 - Un build = un cliente, elegido por env var. No hay rutas `/[client]`.
 - Despliegue previsto: un proyecto Vercel por cliente con `CLIENT_ID` (README; no hay config de Vercel
   en el repo).
-- El fallback silencioso a `demo-professional` hace que un despliegue mal configurado publique el demo.
+- Sin `CLIENT_ID` válido el build falla (`next.config.ts` → `client-id.ts`): un proyecto mal configurado no publica nada.
 
 ## Convenciones observadas
 

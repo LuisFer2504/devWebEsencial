@@ -12,7 +12,11 @@ $env:CLIENT_ID='<id>'; npm run build
 - `next.config.ts`: `output: "export"`, `images.unoptimized: true`, `trailingSlash: true`.
 - Resultado: `out/index.html`, `out/404.html`, `out/_next/static/**`, más todo `public/`.
 - Verificado (demo-artist): build OK, `/` 3.51 kB, First Load JS 109 kB, `out/` 1.1 MB.
-- `CLIENT_ID` vacío → `demo-professional` **sin aviso**. También se acepta `NEXT_PUBLIC_CLIENT_ID`.
+- `CLIENT_ID` es **obligatorio**: si falta, no es un slug válido o no existe `clients/<id>.json`, `next build`
+  se detiene antes de compilar con un mensaje que lista los clientes disponibles (`src/config/client-id.ts`,
+  llamado desde `next.config.ts`). También se acepta `NEXT_PUBLIC_CLIENT_ID` (si ambos existen deben
+  coincidir). Solo `next dev` usa `demo-professional` por defecto, con aviso.
+- El campo `id` del JSON debe coincidir con el nombre del archivo.
 - Un JSON inválido o inexistente hace fallar el build con un mensaje por campo (comportamiento deseado).
 - `npm start` (`next start`) no es aplicable a `output: "export"`; para probar `out/` usa un servidor
   estático (p. ej. `npx serve out`, requiere descarga; no es dependencia del proyecto).
@@ -23,7 +27,8 @@ $env:CLIENT_ID='<id>'; npm run build
 Un proyecto Vercel por cliente importando el mismo repositorio, con env `CLIENT_ID=<id>`. Vercel ejecuta
 `npm run build` y publica `out/`. No hay `vercel.json`, CI, ni scripts de despliegue en el repo.
 
-Consecuencia: cualquier push a la rama conectada redespliega **todos** los clientes; un cambio en un
+Consecuencia: cualquier push a la rama conectada redespliega **todos** los clientes (solución diseñada en
+`docs/VERCEL_DEPLOYMENTS.md`, pendiente de implementar); un cambio en un
 componente compartido afecta a todos a la vez.
 
 Alternativas compatibles (no implementadas): cualquier hosting estático (Netlify, Cloudflare Pages,
@@ -31,7 +36,6 @@ S3+CloudFront, hosting tradicional por FTP) subiendo `out/`.
 
 ## Lo que falta para un despliegue profesional
 
-- Fallar el build si falta `CLIENT_ID` en entornos de producción (`VERCEL=1`/`CI`).
 - `metadataBase`/URL del sitio por cliente (campo `seo.siteUrl` propuesto) para canónica y OG absolutos.
 - `robots.txt` y `sitemap.xml` (Next `app/robots.ts` y `app/sitemap.ts` funcionan con export estático).
 - Favicon/íconos por cliente; quitar los SVG de plantilla de `public/` (`next.svg`, `vercel.svg`,

@@ -46,10 +46,12 @@ Detalle: `references/ARCHITECTURE.md`.
 - Parte de un demo de la misma variante (`clients/demo-<variant>.json`).
 - `id` = slug (`^[a-z0-9]+(-[a-z0-9]+)*$`) e igual al nombre del archivo.
 - Campos obligatorios y límites: `references/CLIENT_CONFIGURATION.md`.
-- Editar a mano el JSON es hoy **más seguro** que re-guardar desde el editor (el editor pierde campos:
-  `colors.accent`, `colors.neutralBg`, `contact.googleMapsUrl`, `seo.ogImage`, la mayoría de
-  `sectionTitles`, `packages[].ctaText/ctaLink`, `events[].description`, etc.; ver `references/GENERATOR.md`).
-- Valida: `npm test` (si es demo) y siempre `CLIENT_ID=<id> npm run build`.
+- El editor (`npm run generate`) conserva al guardar todos los campos del JSON, incluidos los que no
+  muestra (`colors.accent`, `contact.googleMapsUrl`, `seo.ogImage`, `trustBadges`, títulos, `ctaText`…);
+  esos campos solo se editan a mano en el JSON. Antes de sobrescribir guarda una copia en
+  `.generator-backups/`. Ver `references/GENERATOR.md`.
+- El campo `id` debe coincidir con el nombre del archivo (el loader lo exige).
+- Valida: `npm test` (valida todos los clientes) y siempre `CLIENT_ID=<id> npm run build`.
 - No pongas datos privados, claves ni tokens en el JSON.
 
 ## 3. Modificar el esquema sin romper clientes
@@ -58,7 +60,9 @@ Detalle: `references/ARCHITECTURE.md`.
 - No renombres/elimines campos: añade el nuevo, lee ambos en los componentes, migra después.
 - Zod `z.object` **elimina claves desconocidas** al parsear: un campo que exista en JSON pero no en el
   esquema desaparece al guardar desde el generador. Añade al esquema antes de usarlo en JSON.
-- Actualiza también `src/types/client.ts` (re-export) y el generador (`collectFormData` + `populateForm`).
+- Actualiza también `src/types/client.ts` (re-export). Si el campo debe ser editable en el editor, añádelo en
+  `tools/generator/form-model.js` (`formFromConfig` + `buildConfig`, o `LISTS`) y en el HTML; si no, el
+  editor ya lo conserva sin cambios. Cubre el caso en `tests/generator-form.test.ts`.
 - Ejecuta la suite completa y compila un cliente por variante.
 
 ## 4. Crear una variante visual nueva
@@ -88,19 +92,22 @@ no importes ahí nada que use `fs` (p. ej. `client-loader`).
 
 ## 6. Modificar el generador
 
-- `server.mjs` importa el esquema `.ts` directamente (requiere Node ≥ 22.6).
-- La UI es HTML + JS sin framework, con Tailwind por CDN (solo herramienta interna).
-- Cualquier campo nuevo debe agregarse en: HTML del tab, `populateForm`, `collectFormData`, y si es
-  lista, su `render*`. Preferir **fusionar sobre `currentConfig`** en vez de reconstruir objetos, para no
-  perder campos.
-- `tests/generator-api.test.ts` prueba una **copia** del handler, no `server.mjs`: si cambias el servidor,
-  ese test no lo detecta. Verifica manualmente con `npm run generate` + `curl`.
-- No relajes: validación de slug, Zod, comprobación de path, bloqueo de sobrescritura, bind a `127.0.0.1`.
+- `server.mjs` importa el esquema `.ts` directamente (requiere Node ≥ 22.6) y exporta
+  `createGeneratorServer()`; `tests/generator-api.test.ts` prueba **el servidor real** sobre una copia
+  temporal de `clients/`.
+- `form-model.js` contiene la lógica pura del formulario (sin DOM): `formFromConfig`, `buildConfig`,
+  `mergeListItem`, `escapeHtml`. `index.html` solo conecta inputs ↔ modelo. El JSON cargado es la fuente
+  de verdad: **nunca reconstruyas objetos**, fusiona sobre ellos.
+- Todo texto dinámico insertado con `innerHTML` pasa por `esc()` (`escapeHtml`).
+- No relajes ninguna capa de seguridad: bind a `127.0.0.1`, Host local, token de sesión
+  (`X-Generator-Token`), rechazo de `Origin`/`Sec-Fetch-Site` ajenos y de CORS, lista blanca de archivos,
+  `Content-Type` JSON, límite de 1 MB, id estricto, Zod, ruta confinada sin symlinks, escritura atómica y
+  copia de seguridad.
 
 ## 7. Validar
 
 ```bash
-npm test                 # 13 tests (2 archivos)
+npm test                 # producto, editor, servidor del generador, CLIENT_ID y guardia de producción
 npm run type-check
 npm run lint
 CLIENT_ID=<id> npm run build   # por cada cliente/variante afectada
@@ -130,9 +137,12 @@ WhatsApp probado en móvil, Lighthouse, dominio). No despliegues sin autorizaci�
 - Textos o claims fijos en variantes que no aplican a todos los clientes (ej.: la cinta "Envíos
   Rápidos / Garantía" de Commerce ya es deuda).
 - Clases Tailwind v4 en un proyecto v3.
-- Confiar en el fallback a `demo-professional` cuando falta `CLIENT_ID`.
-- Ampliar CORS o escuchar en `0.0.0.0` en el generador.
-- Guardar desde el editor un cliente real sin revisar el diff del JSON.
+- Saltarse la validación de `CLIENT_ID` (`src/config/client-id.ts`) o reintroducir un valor por defecto en
+  builds de producción.
+- Añadir CORS, desactivar el token o escuchar en `0.0.0.0` en el generador.
+- Reconstruir objetos del JSON en el editor en lugar de fusionarlos (pérdida de datos).
+- Actualizar Next.js a otra versión mayor sin un plan propio, o quitar el `override` de `postcss` sin
+  comprobar `npm audit --omit=dev`.
 
 ## Referencias
 
