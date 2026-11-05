@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator-token" content="__GENERATOR_TOKEN__">
   <title>Generador y Editor Visual — Web Esencial</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -598,8 +599,30 @@
     </div>
   </main>
 
+  <script src="/form-model.js"></script>
   <script>
-    // Estado y Datos del Cliente
+    // ============================================================================================
+    // Editor local de Web Esencial.
+    // El JSON cargado (currentConfig) es la fuente de verdad: el formulario solo modifica los campos
+    // que muestra y FormModel.buildConfig conserva todo lo demás. Todo texto se inserta escapado.
+    // ============================================================================================
+    const FM = window.FormModel;
+    const esc = FM.escapeHtml;
+    const TOKEN = document.querySelector('meta[name="generator-token"]').content;
+
+    // Llamada a la API local con el token de sesión (sin él, el servidor responde 401).
+    async function api(path, options = {}) {
+      const res = await fetch(path, {
+        ...options,
+        headers: { ...(options.headers || {}), 'X-Generator-Token': TOKEN },
+        credentials: 'same-origin',
+      });
+      let json = {};
+      try { json = await res.json(); } catch { json = { success: false, error: `Respuesta inesperada (${res.status})` }; }
+      return { res, json };
+    }
+
+    // Configuración inicial (cliente nuevo vacío).
     let currentConfig = {
       id: "nuevo-cliente",
       businessName: "",
@@ -607,915 +630,370 @@
       variant: "artist",
       colors: { primary: "#d97706", primaryHover: "#b45309" },
       hero: { title: "", description: "", ctaPrimary: { text: "Contactar", link: "#contacto" } },
-      about: { title: "", description: "", highlights: [] },
+      about: { title: "", description: "" },
       services: [],
-      packages: [],
       advantages: [],
-      gallery: [],
-      videos: [],
-      events: [],
-      artistProfile: {},
-      contact: { schedule: [] },
+      contact: {},
       seo: { title: "", description: "" },
-      sectionTitles: {},
-      sectionVisibility: {
-        about: true, services: true, packages: true, videos: true, gallery: true, events: true, advantages: true, schedule: true, contact: true
-      }
     };
+    // Borradores de listas de texto simples (destacados/logros y horarios).
+    let highlightsDraft = [];
+    let scheduleDraft = [];
 
-    // Navegación por pestañas
+    const $ = (id) => document.getElementById(id);
+
+    // --- Navegación por pestañas ---
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
-
-    tabButtons.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const targetId = btn.getAttribute('data-tab');
-        
-        tabButtons.forEach(b => {
-          b.classList.remove('border-emerald-600', 'text-emerald-700', 'font-bold');
-          b.classList.add('border-transparent', 'text-slate-600');
-        });
-        btn.classList.add('border-emerald-600', 'text-emerald-700', 'font-bold');
-        btn.classList.remove('border-transparent', 'text-slate-600');
-
-        tabContents.forEach(c => c.classList.remove('active'));
-        document.getElementById(targetId).classList.add('active');
-
-        if (targetId === 'tab-review') {
-          updateJsonPreview();
-        }
+    function showTab(targetId) {
+      tabButtons.forEach(b => {
+        const active = b.getAttribute('data-tab') === targetId;
+        b.classList.toggle('border-emerald-600', active);
+        b.classList.toggle('text-emerald-700', active);
+        b.classList.toggle('font-bold', active);
+        b.classList.toggle('border-transparent', !active);
+        b.classList.toggle('text-slate-600', !active);
       });
-    });
+      tabContents.forEach(c => c.classList.toggle('active', c.id === targetId));
+      if (targetId === 'tab-review') updateJsonPreview();
+    }
+    tabButtons.forEach(btn => btn.addEventListener('click', (e) => { e.preventDefault(); showTab(btn.getAttribute('data-tab')); }));
 
-    // Sincronización de color pickers
-    document.getElementById('primaryColorPicker').addEventListener('input', (e) => {
-      document.getElementById('primaryColor').value = e.target.value;
-    });
-    document.getElementById('primaryHoverColorPicker').addEventListener('input', (e) => {
-      document.getElementById('primaryHoverColor').value = e.target.value;
-    });
+    // --- Color pickers ---
+    $('primaryColorPicker').addEventListener('input', (e) => { $('primaryColor').value = e.target.value; });
+    $('primaryHoverColorPicker').addEventListener('input', (e) => { $('primaryHoverColor').value = e.target.value; });
+    const isHex = (v) => /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v || '');
+    $('primaryColor').addEventListener('input', (e) => { if (isHex(e.target.value)) $('primaryColorPicker').value = e.target.value; });
+    $('primaryHoverColor').addEventListener('input', (e) => { if (isHex(e.target.value)) $('primaryHoverColorPicker').value = e.target.value; });
 
-    // Reordenar helper para cualquier lista
     function moveItemInArray(arr, fromIndex, toIndex) {
       if (toIndex < 0 || toIndex >= arr.length) return;
       const item = arr.splice(fromIndex, 1)[0];
       arr.splice(toIndex, 0, item);
     }
 
-    // --- 1. GESTOR DE HIGHLIGHTS / PILARES ---
-    const highlightsContainer = document.getElementById('highlightsContainer');
-    function renderHighlights(list) {
-      highlightsContainer.innerHTML = '';
-      if (!list || list.length === 0) {
-        highlightsContainer.innerHTML = '<p class="text-xs text-slate-400 italic">No hay puntos destacados configurados para este cliente.</p>';
+    // =========================================================================
+    // Listas de texto simple (destacados / horarios)
+    // =========================================================================
+    const STRING_LISTS = {
+      highlights: { container: 'highlightsContainer', inputClass: 'hl-input', placeholder: '', empty: 'No hay puntos destacados configurados para este cliente.', get: () => highlightsDraft, set: (v) => { highlightsDraft = v; }, add: '' },
+      schedule: { container: 'scheduleContainer', inputClass: 'sch-input', placeholder: 'ej: Lunes a Viernes: 9:00 AM - 6:00 PM', empty: 'No hay horarios configurados. La sección no mostrará horarios.', get: () => scheduleDraft, set: (v) => { scheduleDraft = v; }, add: 'Lunes a Viernes: 9:00 AM - 6:00 PM' },
+    };
+
+    function syncStringList(key) {
+      const def = STRING_LISTS[key];
+      const inputs = $(def.container).querySelectorAll('.' + def.inputClass);
+      if (inputs.length) def.set(Array.from(inputs).map(i => i.value));
+    }
+
+    function renderStringList(key) {
+      const def = STRING_LISTS[key];
+      const box = $(def.container);
+      const list = def.get();
+      box.innerHTML = '';
+      if (!list.length) {
+        box.innerHTML = `<p class="text-xs text-slate-400 italic">${esc(def.empty)}</p>`;
         return;
       }
-      list.forEach((hl, idx) => {
+      list.forEach((value, idx) => {
         const row = document.createElement('div');
         row.className = 'flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200';
         row.innerHTML = `
-          <button type="button" class="btn-icon bg-white hover:bg-slate-200 text-slate-600 btn-hl-up" data-index="${idx}" title="Subir">▲</button>
-          <button type="button" class="btn-icon bg-white hover:bg-slate-200 text-slate-600 btn-hl-down" data-index="${idx}" title="Bajar">▼</button>
-          <input type="text" value="${hl}" class="hl-input flex-1 rounded border border-slate-300 p-1.5 text-xs">
-          <button type="button" class="btn-icon bg-red-50 hover:bg-red-100 text-red-600 btn-hl-del" data-index="${idx}" title="Eliminar">✕</button>
-        `;
-        highlightsContainer.appendChild(row);
+          <button type="button" class="btn-icon bg-white hover:bg-slate-200 text-slate-600" data-action="up" data-index="${idx}" title="Subir">▲</button>
+          <button type="button" class="btn-icon bg-white hover:bg-slate-200 text-slate-600" data-action="down" data-index="${idx}" title="Bajar">▼</button>
+          <input type="text" value="${esc(value)}" placeholder="${esc(def.placeholder)}" class="${def.inputClass} flex-1 rounded border border-slate-300 p-1.5 text-xs">
+          <button type="button" class="btn-icon bg-red-50 hover:bg-red-100 text-red-600" data-action="del" data-index="${idx}" title="Eliminar">✕</button>`;
+        box.appendChild(row);
       });
+      box.querySelectorAll('button[data-action]').forEach(btn => btn.addEventListener('click', () => {
+        syncStringList(key);
+        const arr = def.get();
+        const i = parseInt(btn.dataset.index, 10);
+        if (btn.dataset.action === 'up') moveItemInArray(arr, i, i - 1);
+        if (btn.dataset.action === 'down') moveItemInArray(arr, i, i + 1);
+        if (btn.dataset.action === 'del') arr.splice(i, 1);
+        renderStringList(key);
+      }));
+    }
 
-      highlightsContainer.querySelectorAll('.hl-input').forEach((input, i) => {
-        input.addEventListener('input', (e) => { currentConfig.about.highlights[i] = e.target.value; });
-      });
-      highlightsContainer.querySelectorAll('.btn-hl-up').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const i = parseInt(btn.dataset.index, 10);
-          moveItemInArray(currentConfig.about.highlights, i, i - 1);
-          renderHighlights(currentConfig.about.highlights);
-        });
-      });
-      highlightsContainer.querySelectorAll('.btn-hl-down').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const i = parseInt(btn.dataset.index, 10);
-          moveItemInArray(currentConfig.about.highlights, i, i + 1);
-          renderHighlights(currentConfig.about.highlights);
-        });
-      });
-      highlightsContainer.querySelectorAll('.btn-hl-del').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const i = parseInt(btn.dataset.index, 10);
-          currentConfig.about.highlights.splice(i, 1);
-          renderHighlights(currentConfig.about.highlights);
-        });
+    $('btnAddHighlight').addEventListener('click', () => { syncStringList('highlights'); highlightsDraft.push(STRING_LISTS.highlights.add); renderStringList('highlights'); });
+    $('btnAddSchedule').addEventListener('click', () => { syncStringList('schedule'); scheduleDraft.push(STRING_LISTS.schedule.add); renderStringList('schedule'); });
+
+    // =========================================================================
+    // Listas de objetos (servicios, paquetes, videos, galería, eventos, ventajas)
+    // Cada elemento conserva TODOS sus campos; los inputs solo actualizan los que muestran.
+    // =========================================================================
+    const IN = 'w-full rounded border border-slate-300 p-1.5 text-xs';
+    const OBJECT_LISTS = {
+      services: {
+        container: 'servicesContainer', addButton: 'btnAddService', label: 'Servicio', empty: 'Sin servicios registrados.',
+        box: 'rounded-xl border border-slate-200 bg-slate-50 p-3.5 space-y-2.5', grid: 'grid grid-cols-1 sm:grid-cols-3 gap-2.5',
+        inputs: [
+          { field: 'id', ph: 'ID (slug) *' },
+          { field: 'title', ph: 'Título *', span: 'sm:col-span-2', extra: 'font-bold' },
+          { field: 'description', ph: 'Descripción *', span: 'sm:col-span-3', textarea: 2 },
+          { field: 'price', ph: 'Precio (ej: S/ 150)' },
+          { field: 'duration', ph: 'Duración (ej: 45 min)' },
+          { field: 'badge', ph: 'Badge (ej: Más solicitado)' },
+        ],
+        newItem: (list) => ({ id: `servicio-${list.length + 1}`, title: '', description: '' }),
+      },
+      packages: {
+        container: 'packagesContainer', addButton: 'btnAddPackage', label: 'Paquete', empty: 'No hay paquetes de contratación registrados.',
+        box: 'rounded-xl border border-amber-200 bg-amber-50/40 p-4 space-y-3', grid: 'grid grid-cols-1 sm:grid-cols-3 gap-3', labelClass: 'text-amber-900',
+        inputs: [
+          { field: 'id', ph: 'ID (slug) *' },
+          { field: 'title', ph: 'Nombre del Paquete *', span: 'sm:col-span-2', extra: 'font-bold' },
+          { field: 'description', ph: 'Descripción del formato *', span: 'sm:col-span-3', textarea: 2 },
+          { field: 'price', ph: 'Precio (opcional, ej: $800)' },
+          { field: 'currency', ph: 'Moneda (USD / PEN)' },
+          { field: 'duration', ph: 'Duración (ej: 2 horas)' },
+          { field: 'features', ph: 'Características incluidas (una por línea)', span: 'sm:col-span-3', textarea: 3 },
+        ],
+        newItem: (list) => ({ id: `paquete-${list.length + 1}`, title: '', description: '', features: ['Sonido profesional propio', 'Repertorio a pedido'], visible: true }),
+      },
+      videos: {
+        container: 'videosContainer', addButton: 'btnAddVideo', label: 'Video', empty: 'No hay videos registrados.',
+        box: 'rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2', grid: 'grid grid-cols-1 sm:grid-cols-2 gap-2',
+        inputs: [
+          { field: 'title', ph: 'Título *', extra: 'font-bold' },
+          { field: 'url', ph: 'URL de YouTube/Vimeo *', extra: 'font-mono' },
+          { field: 'description', ph: 'Descripción opcional', span: 'sm:col-span-2' },
+        ],
+        newItem: () => ({ title: '', url: '' }),
+      },
+      gallery: {
+        container: 'galleryContainer', addButton: 'btnAddGallery', label: 'Foto', empty: 'No hay fotografías registradas.',
+        box: 'rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2', grid: 'grid grid-cols-1 sm:grid-cols-3 gap-2',
+        inputs: [
+          { field: 'url', ph: 'URL de la imagen *', span: 'sm:col-span-2', extra: 'font-mono' },
+          { field: 'alt', ph: 'Texto alternativo (alt) *' },
+          { field: 'caption', ph: 'Pie de foto / descripción opcional', span: 'sm:col-span-3' },
+        ],
+        newItem: () => ({ url: '', alt: 'Fotografía en vivo' }),
+      },
+      events: {
+        container: 'eventsContainer', addButton: 'btnAddEvent', label: 'Evento', empty: 'No hay presentaciones registradas. La sección se ocultará automáticamente.',
+        box: 'rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2', grid: 'grid grid-cols-1 sm:grid-cols-3 gap-2',
+        inputs: [
+          { field: 'title', ph: 'Nombre del evento *', span: 'sm:col-span-2', extra: 'font-bold' },
+          { field: 'date', ph: 'Fecha (ej: 14 Nov 2026) *' },
+          { field: 'venue', ph: 'Lugar / Recinto *' },
+          { field: 'city', ph: 'Ciudad *' },
+          { field: 'time', ph: 'Hora (ej: 8:30 PM)' },
+          { field: 'ticketUrl', ph: 'URL Entradas / Info', span: 'sm:col-span-3', extra: 'font-mono' },
+        ],
+        newItem: () => ({ title: '', date: '', venue: '', city: '', visible: true }),
+      },
+      advantages: {
+        container: 'advantagesContainer', addButton: 'btnAddAdvantage', label: 'Ventaja', empty: 'No hay ventajas configuradas.',
+        box: 'rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2', grid: 'space-y-1.5',
+        inputs: [
+          { field: 'title', ph: 'Título de la ventaja *', extra: 'font-bold' },
+          { field: 'description', ph: 'Descripción de la ventaja *', textarea: 2 },
+        ],
+        newItem: () => ({ title: '', description: '' }),
+      },
+    };
+
+    /** Copia lo escrito en los inputs al modelo (sin descartar elementos ni campos). */
+    function syncObjectList(key) {
+      const ui = OBJECT_LISTS[key];
+      const spec = FM.LISTS[key];
+      const list = currentConfig[key];
+      if (!Array.isArray(list)) return;
+      $(ui.container).querySelectorAll('[data-item-index]').forEach(node => {
+        const idx = parseInt(node.dataset.itemIndex, 10);
+        const values = {};
+        for (const [field, cls] of Object.entries(spec.fields)) {
+          const input = node.querySelector('.' + cls);
+          if (input) values[field] = input.value;
+        }
+        list[idx] = FM.mergeListItem(list[idx], values, key);
       });
     }
-    document.getElementById('btnAddHighlight').addEventListener('click', () => {
-      if (!currentConfig.about.highlights) currentConfig.about.highlights = [];
-      currentConfig.about.highlights.push("");
-      renderHighlights(currentConfig.about.highlights);
-    });
 
-    // --- 2. GESTOR DE HORARIOS ---
-    const scheduleContainer = document.getElementById('scheduleContainer');
-    function renderSchedule(list) {
-      scheduleContainer.innerHTML = '';
-      if (!list || list.length === 0) {
-        scheduleContainer.innerHTML = '<p class="text-xs text-slate-400 italic">No hay horarios configurados. La sección no mostrará horarios.</p>';
-        return;
-      }
-      list.forEach((sch, idx) => {
-        const row = document.createElement('div');
-        row.className = 'flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200';
-        row.innerHTML = `
-          <button type="button" class="btn-icon bg-white hover:bg-slate-200 text-slate-600 btn-sch-up" data-index="${idx}">▲</button>
-          <button type="button" class="btn-icon bg-white hover:bg-slate-200 text-slate-600 btn-sch-down" data-index="${idx}">▼</button>
-          <input type="text" value="${sch}" placeholder="ej: Lunes a Viernes: 9:00 AM - 6:00 PM" class="sch-input flex-1 rounded border border-slate-300 p-1.5 text-xs">
-          <button type="button" class="btn-icon bg-red-50 hover:bg-red-100 text-red-600 btn-sch-del" data-index="${idx}">✕</button>
-        `;
-        scheduleContainer.appendChild(row);
-      });
-
-      scheduleContainer.querySelectorAll('.sch-input').forEach((input, i) => {
-        input.addEventListener('input', (e) => { currentConfig.contact.schedule[i] = e.target.value; });
-      });
-      scheduleContainer.querySelectorAll('.btn-sch-up').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const i = parseInt(btn.dataset.index, 10);
-          moveItemInArray(currentConfig.contact.schedule, i, i - 1);
-          renderSchedule(currentConfig.contact.schedule);
-        });
-      });
-      scheduleContainer.querySelectorAll('.btn-sch-down').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const i = parseInt(btn.dataset.index, 10);
-          moveItemInArray(currentConfig.contact.schedule, i, i + 1);
-          renderSchedule(currentConfig.contact.schedule);
-        });
-      });
-      scheduleContainer.querySelectorAll('.btn-sch-del').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const i = parseInt(btn.dataset.index, 10);
-          currentConfig.contact.schedule.splice(i, 1);
-          renderSchedule(currentConfig.contact.schedule);
-        });
-      });
+    function syncAllLists() {
+      Object.keys(OBJECT_LISTS).forEach(syncObjectList);
+      Object.keys(STRING_LISTS).forEach(syncStringList);
     }
-    document.getElementById('btnAddSchedule').addEventListener('click', () => {
-      if (!currentConfig.contact.schedule) currentConfig.contact.schedule = [];
-      currentConfig.contact.schedule.push("Lunes a Viernes: 9:00 AM - 6:00 PM");
-      renderSchedule(currentConfig.contact.schedule);
-    });
 
-    // --- 3. GESTOR DE SERVICIOS TRADICIONALES ---
-    const servicesContainer = document.getElementById('servicesContainer');
-    function renderServices(servicesList) {
-      servicesContainer.innerHTML = '';
-      if (!servicesList || servicesList.length === 0) {
-        servicesContainer.innerHTML = '<p class="text-xs text-slate-400 italic">Sin servicios registrados.</p>';
+    function renderObjectList(key) {
+      const ui = OBJECT_LISTS[key];
+      const spec = FM.LISTS[key];
+      const box = $(ui.container);
+      const list = currentConfig[key] || [];
+      box.innerHTML = '';
+      if (!list.length) {
+        box.innerHTML = `<p class="text-xs text-slate-400 italic">${esc(ui.empty)}</p>`;
         return;
       }
-      servicesList.forEach((s, idx) => {
-        const item = document.createElement('div');
-        item.className = 'rounded-xl border border-slate-200 bg-slate-50 p-3.5 space-y-2.5';
-        item.innerHTML = `
+      list.forEach((item, idx) => {
+        const values = FM.valuesFromItem(item, key);
+        const fields = ui.inputs.map(inp => {
+          const cls = `${spec.fields[inp.field]} ${IN} ${inp.extra || ''}`;
+          const control = inp.textarea
+            ? `<textarea placeholder="${esc(inp.ph)}" rows="${inp.textarea}" class="${cls}">${esc(values[inp.field])}</textarea>`
+            : `<input type="text" placeholder="${esc(inp.ph)}" value="${esc(values[inp.field])}" class="${cls}">`;
+          return `<div class="${inp.span || ''}">${control}</div>`;
+        }).join('');
+        const node = document.createElement('div');
+        node.className = ui.box;
+        node.dataset.itemIndex = String(idx);
+        node.innerHTML = `
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1.5">
-              <button type="button" class="btn-icon bg-white text-slate-600 btn-srv-up" data-index="${idx}">▲</button>
-              <button type="button" class="btn-icon bg-white text-slate-600 btn-srv-down" data-index="${idx}">▼</button>
-              <span class="text-xs font-bold text-slate-700 uppercase">Servicio #${idx + 1}</span>
+              <button type="button" class="btn-icon bg-white text-slate-600" data-action="up" data-index="${idx}" title="Subir">▲</button>
+              <button type="button" class="btn-icon bg-white text-slate-600" data-action="down" data-index="${idx}" title="Bajar">▼</button>
+              <span class="text-xs font-bold uppercase ${ui.labelClass || 'text-slate-700'}">${esc(ui.label)} #${idx + 1}</span>
             </div>
-            <button type="button" class="text-xs text-red-600 font-bold btn-srv-del" data-index="${idx}">Eliminar</button>
+            <button type="button" class="text-xs text-red-600 font-bold" data-action="del" data-index="${idx}">Eliminar</button>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            <div><input type="text" placeholder="ID (slug) *" value="${s.id || ''}" class="srv-id w-full rounded border border-slate-300 p-1.5 text-xs"></div>
-            <div class="sm:col-span-2"><input type="text" placeholder="Título *" value="${s.title || ''}" class="srv-title w-full rounded border border-slate-300 p-1.5 text-xs font-bold"></div>
-            <div class="sm:col-span-3"><textarea placeholder="Descripción *" class="srv-desc w-full rounded border border-slate-300 p-1.5 text-xs" rows="2">${s.description || ''}</textarea></div>
-            <div><input type="text" placeholder="Precio (ej: S/ 150)" value="${s.price || ''}" class="srv-price w-full rounded border border-slate-300 p-1.5 text-xs"></div>
-            <div><input type="text" placeholder="Duración (ej: 45 min)" value="${s.duration || ''}" class="srv-duration w-full rounded border border-slate-300 p-1.5 text-xs"></div>
-            <div><input type="text" placeholder="Badge (ej: Más solicitado)" value="${s.badge || ''}" class="srv-badge w-full rounded border border-slate-300 p-1.5 text-xs"></div>
-          </div>
-        `;
-        servicesContainer.appendChild(item);
+          <div class="${ui.grid}">${fields}</div>`;
+        box.appendChild(node);
       });
-
-      servicesContainer.querySelectorAll('.btn-srv-up').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectFormData();
-          const i = parseInt(btn.dataset.index, 10);
-          moveItemInArray(currentConfig.services, i, i - 1);
-          renderServices(currentConfig.services);
-        });
-      });
-      servicesContainer.querySelectorAll('.btn-srv-down').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectFormData();
-          const i = parseInt(btn.dataset.index, 10);
-          moveItemInArray(currentConfig.services, i, i + 1);
-          renderServices(currentConfig.services);
-        });
-      });
-      servicesContainer.querySelectorAll('.btn-srv-del').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectFormData();
-          const i = parseInt(btn.dataset.index, 10);
-          currentConfig.services.splice(i, 1);
-          renderServices(currentConfig.services);
-        });
-      });
+      box.querySelectorAll('button[data-action]').forEach(btn => btn.addEventListener('click', () => {
+        syncObjectList(key);
+        const arr = currentConfig[key];
+        const i = parseInt(btn.dataset.index, 10);
+        if (btn.dataset.action === 'up') moveItemInArray(arr, i, i - 1);
+        if (btn.dataset.action === 'down') moveItemInArray(arr, i, i + 1);
+        if (btn.dataset.action === 'del') arr.splice(i, 1);
+        renderObjectList(key);
+      }));
     }
-    document.getElementById('btnAddService').addEventListener('click', () => {
-      collectFormData();
-      if (!currentConfig.services) currentConfig.services = [];
-      currentConfig.services.push({
-        id: `servicio-${currentConfig.services.length + 1}`,
-        title: "",
-        description: "",
+
+    Object.entries(OBJECT_LISTS).forEach(([key, ui]) => {
+      $(ui.addButton).addEventListener('click', () => {
+        syncObjectList(key);
+        if (!Array.isArray(currentConfig[key])) currentConfig[key] = [];
+        currentConfig[key].push(ui.newItem(currentConfig[key]));
+        renderObjectList(key);
       });
-      renderServices(currentConfig.services);
     });
 
-    // --- 4. GESTOR DE PAQUETES (ARTISTAS) ---
-    const packagesContainer = document.getElementById('packagesContainer');
-    function renderPackages(pkgList) {
-      packagesContainer.innerHTML = '';
-      if (!pkgList || pkgList.length === 0) {
-        packagesContainer.innerHTML = '<p class="text-xs text-slate-400 italic">No hay paquetes de contratación registrados.</p>';
-        return;
-      }
-      pkgList.forEach((p, idx) => {
-        const item = document.createElement('div');
-        item.className = 'rounded-xl border border-amber-200 bg-amber-50/40 p-4 space-y-3';
-        item.innerHTML = `
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5">
-              <button type="button" class="btn-icon bg-white text-slate-600 btn-pkg-up" data-index="${idx}">▲</button>
-              <button type="button" class="btn-icon bg-white text-slate-600 btn-pkg-down" data-index="${idx}">▼</button>
-              <span class="text-xs font-bold text-amber-900 uppercase">Paquete #${idx + 1}</span>
-            </div>
-            <button type="button" class="text-xs text-red-600 font-bold btn-pkg-del" data-index="${idx}">Eliminar</button>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><input type="text" placeholder="ID (slug) *" value="${p.id || ''}" class="pkg-id w-full rounded border border-slate-300 p-2 text-xs"></div>
-            <div class="sm:col-span-2"><input type="text" placeholder="Nombre del Paquete *" value="${p.title || ''}" class="pkg-title w-full rounded border border-slate-300 p-2 text-xs font-bold"></div>
-            <div class="sm:col-span-3"><textarea placeholder="Descripción del formato *" class="pkg-desc w-full rounded border border-slate-300 p-2 text-xs" rows="2">${p.description || ''}</textarea></div>
-            <div><input type="text" placeholder="Precio (opcional, ej: $800)" value="${p.price || ''}" class="pkg-price w-full rounded border border-slate-300 p-2 text-xs"></div>
-            <div><input type="text" placeholder="Moneda (USD / PEN)" value="${p.currency || ''}" class="pkg-curr w-full rounded border border-slate-300 p-2 text-xs"></div>
-            <div><input type="text" placeholder="Duración (ej: 2 horas)" value="${p.duration || ''}" class="pkg-dur w-full rounded border border-slate-300 p-2 text-xs"></div>
-            <div class="sm:col-span-3">
-              <input type="text" placeholder="Características incluidas (separadas por comas)" value="${(p.features || []).join(', ')}" class="pkg-feat w-full rounded border border-slate-300 p-2 text-xs">
-            </div>
-          </div>
-        `;
-        packagesContainer.appendChild(item);
-      });
+    // =========================================================================
+    // Formulario ↔ modelo
+    // =========================================================================
+    const SOCIAL_INPUTS = { spotify: 'socSpotify', youtube: 'socYouTube', instagram: 'socIg', tiktok: 'socTk', facebook: 'socFb', appleMusic: 'socApple', soundcloud: 'socSoundCloud', linkedin: 'socLk' };
+    const TITLE_INPUTS = { servicesTitle: 'titleServices', advantagesTitle: 'titleAdvantages', contactTitle: 'titleContact', videosTitle: 'titleVideos' };
+    const VISIBILITY_INPUTS = { about: 'visAbout', services: 'visServices', packages: 'visPackages', videos: 'visVideos', gallery: 'visGallery', events: 'visEvents', advantages: 'visAdvantages', schedule: 'visSchedule', contact: 'visContact' };
+    const SIMPLE_INPUTS = {
+      id: 'clientId', businessName: 'businessName', tagline: 'tagline', logoUrl: 'logoUrl',
+      primaryColor: 'primaryColor', primaryHoverColor: 'primaryHoverColor',
+      heroBadge: 'heroBadge', heroTitle: 'heroTitle', heroDesc: 'heroDesc', heroImage: 'heroImage',
+      heroCtaText: 'heroCtaText', heroCtaLink: 'heroCtaLink', heroCtaSecText: 'heroCtaSecText', heroCtaSecLink: 'heroCtaSecLink',
+      aboutTitle: 'aboutTitle', aboutDesc: 'aboutDesc', artGenre: 'artGenre', artZone: 'artZone', artPortrait: 'artPortrait', artQuote: 'artQuote',
+      contactWa: 'contactWa', contactWaMsg: 'contactWaMsg', contactPhone: 'contactPhone', contactEmail: 'contactEmail',
+      contactAddress: 'contactAddress', contactCity: 'contactCity',
+      seoTitle: 'seoTitle', seoDesc: 'seoDesc', seoKeywords: 'seoKeywords',
+    };
 
-      packagesContainer.querySelectorAll('.btn-pkg-up').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectFormData();
-          const i = parseInt(btn.dataset.index, 10);
-          moveItemInArray(currentConfig.packages, i, i - 1);
-          renderPackages(currentConfig.packages);
-        });
-      });
-      packagesContainer.querySelectorAll('.btn-pkg-down').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectFormData();
-          const i = parseInt(btn.dataset.index, 10);
-          moveItemInArray(currentConfig.packages, i, i + 1);
-          renderPackages(currentConfig.packages);
-        });
-      });
-      packagesContainer.querySelectorAll('.btn-pkg-del').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectFormData();
-          const i = parseInt(btn.dataset.index, 10);
-          currentConfig.packages.splice(i, 1);
-          renderPackages(currentConfig.packages);
-        });
-      });
+    function readForm() {
+      const form = {};
+      for (const [k, id] of Object.entries(SIMPLE_INPUTS)) form[k] = $(id).value;
+      const selected = document.querySelector('input[name="variant"]:checked');
+      form.variant = selected ? selected.value : currentConfig.variant;
+      form.social = Object.fromEntries(Object.entries(SOCIAL_INPUTS).map(([k, id]) => [k, $(id).value]));
+      form.titles = Object.fromEntries(Object.entries(TITLE_INPUTS).map(([k, id]) => [k, $(id).value]));
+      form.visibility = Object.fromEntries(Object.entries(VISIBILITY_INPUTS).map(([k, id]) => [k, $(id).checked]));
+      return form;
     }
-    document.getElementById('btnAddPackage').addEventListener('click', () => {
-      collectFormData();
-      if (!currentConfig.packages) currentConfig.packages = [];
-      currentConfig.packages.push({
-        id: `paquete-${currentConfig.packages.length + 1}`,
-        title: "",
-        description: "",
-        features: ["Sonido profesional propio", "Repertorio a pedido"],
-        visible: true
-      });
-      renderPackages(currentConfig.packages);
-    });
 
-    // --- 5. GESTOR DE VIDEOS & FOTOS ---
-    const videosContainer = document.getElementById('videosContainer');
-    function renderVideos(vidList) {
-      videosContainer.innerHTML = '';
-      if (!vidList || vidList.length === 0) {
-        videosContainer.innerHTML = '<p class="text-xs text-slate-400 italic">No hay videos registrados.</p>';
-        return;
-      }
-      vidList.forEach((v, idx) => {
-        const item = document.createElement('div');
-        item.className = 'rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2';
-        item.innerHTML = `
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5">
-              <button type="button" class="btn-icon bg-white text-slate-600 btn-vid-up" data-index="${idx}">▲</button>
-              <button type="button" class="btn-icon bg-white text-slate-600 btn-vid-down" data-index="${idx}">▼</button>
-              <span class="text-xs font-bold text-slate-700 uppercase">Video #${idx + 1}</span>
-            </div>
-            <button type="button" class="text-xs text-red-600 font-bold btn-vid-del" data-index="${idx}">Eliminar</button>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <input type="text" placeholder="Título *" value="${v.title || ''}" class="vid-title rounded border border-slate-300 p-1.5 text-xs font-bold">
-            <input type="text" placeholder="URL de YouTube/Vimeo *" value="${v.url || ''}" class="vid-url rounded border border-slate-300 p-1.5 text-xs font-mono">
-            <input type="text" placeholder="Descripción opcional" value="${v.description || ''}" class="vid-desc sm:col-span-2 rounded border border-slate-300 p-1.5 text-xs">
-          </div>
-        `;
-        videosContainer.appendChild(item);
-      });
-      videosContainer.querySelectorAll('.btn-vid-up').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectFormData();
-          const i = parseInt(btn.dataset.index, 10);
-          moveItemInArray(currentConfig.videos, i, i - 1);
-          renderVideos(currentConfig.videos);
-        });
-      });
-      videosContainer.querySelectorAll('.btn-vid-down').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectFormData();
-          const i = parseInt(btn.dataset.index, 10);
-          moveItemInArray(currentConfig.videos, i, i + 1);
-          renderVideos(currentConfig.videos);
-        });
-      });
-      videosContainer.querySelectorAll('.btn-vid-del').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectFormData();
-          const i = parseInt(btn.dataset.index, 10);
-          currentConfig.videos.splice(i, 1);
-          renderVideos(currentConfig.videos);
-        });
-      });
-    }
-    document.getElementById('btnAddVideo').addEventListener('click', () => {
-      collectFormData();
-      if (!currentConfig.videos) currentConfig.videos = [];
-      currentConfig.videos.push({ id: `vid-${currentConfig.videos.length + 1}`, title: "", url: "" });
-      renderVideos(currentConfig.videos);
-    });
-
-    const galleryContainer = document.getElementById('galleryContainer');
-    function renderGallery(imgList) {
-      galleryContainer.innerHTML = '';
-      if (!imgList || imgList.length === 0) {
-        galleryContainer.innerHTML = '<p class="text-xs text-slate-400 italic">No hay fotografías registradas.</p>';
-        return;
-      }
-      imgList.forEach((img, idx) => {
-        const item = document.createElement('div');
-        item.className = 'rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2';
-        item.innerHTML = `
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5">
-              <button type="button" class="btn-icon bg-white text-slate-600 btn-gal-up" data-index="${idx}">▲</button>
-              <button type="button" class="btn-icon bg-white text-slate-600 btn-gal-down" data-index="${idx}">▼</button>
-              <span class="text-xs font-bold text-slate-700 uppercase">Foto #${idx + 1}</span>
-            </div>
-            <button type="button" class="text-xs text-red-600 font-bold btn-gal-del" data-index="${idx}">Eliminar</button>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <input type="text" placeholder="URL de la imagen *" value="${img.url || ''}" class="gal-url sm:col-span-2 rounded border border-slate-300 p-1.5 text-xs font-mono">
-            <input type="text" placeholder="Texto alternativo (alt) *" value="${img.alt || ''}" class="gal-alt rounded border border-slate-300 p-1.5 text-xs">
-            <input type="text" placeholder="Pie de foto / descripción opcional" value="${img.caption || ''}" class="gal-cap sm:col-span-3 rounded border border-slate-300 p-1.5 text-xs">
-          </div>
-        `;
-        galleryContainer.appendChild(item);
-      });
-      galleryContainer.querySelectorAll('.btn-gal-up').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectFormData();
-          const i = parseInt(btn.dataset.index, 10);
-          moveItemInArray(currentConfig.gallery, i, i - 1);
-          renderGallery(currentConfig.gallery);
-        });
-      });
-      galleryContainer.querySelectorAll('.btn-gal-down').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectFormData();
-          const i = parseInt(btn.dataset.index, 10);
-          moveItemInArray(currentConfig.gallery, i, i + 1);
-          renderGallery(currentConfig.gallery);
-        });
-      });
-      galleryContainer.querySelectorAll('.btn-gal-del').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectFormData();
-          const i = parseInt(btn.dataset.index, 10);
-          currentConfig.gallery.splice(i, 1);
-          renderGallery(currentConfig.gallery);
-        });
-      });
-    }
-    document.getElementById('btnAddGallery').addEventListener('click', () => {
-      collectFormData();
-      if (!currentConfig.gallery) currentConfig.gallery = [];
-      currentConfig.gallery.push({ id: `img-${currentConfig.gallery.length + 1}`, url: "", alt: "Fotografía en vivo" });
-      renderGallery(currentConfig.gallery);
-    });
-
-    // --- 6. GESTOR DE EVENTOS ---
-    const eventsContainer = document.getElementById('eventsContainer');
-    function renderEvents(evList) {
-      eventsContainer.innerHTML = '';
-      if (!evList || evList.length === 0) {
-        eventsContainer.innerHTML = '<p class="text-xs text-slate-400 italic">No hay presentaciones registradas. La sección se ocultará automáticamente.</p>';
-        return;
-      }
-      evList.forEach((ev, idx) => {
-        const item = document.createElement('div');
-        item.className = 'rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2';
-        item.innerHTML = `
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5">
-              <button type="button" class="btn-icon bg-white text-slate-600 btn-ev-up" data-index="${idx}">▲</button>
-              <button type="button" class="btn-icon bg-white text-slate-600 btn-ev-down" data-index="${idx}">▼</button>
-              <span class="text-xs font-bold text-slate-700 uppercase">Evento #${idx + 1}</span>
-            </div>
-            <button type="button" class="text-xs text-red-600 font-bold btn-ev-del" data-index="${idx}">Eliminar</button>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <input type="text" placeholder="Nombre del evento *" value="${ev.title || ''}" class="ev-title sm:col-span-2 rounded border border-slate-300 p-1.5 text-xs font-bold">
-            <input type="text" placeholder="Fecha (ej: 14 Nov 2026) *" value="${ev.date || ''}" class="ev-date rounded border border-slate-300 p-1.5 text-xs">
-            <input type="text" placeholder="Lugar / Recinto *" value="${ev.venue || ''}" class="ev-venue rounded border border-slate-300 p-1.5 text-xs">
-            <input type="text" placeholder="Ciudad *" value="${ev.city || ''}" class="ev-city rounded border border-slate-300 p-1.5 text-xs">
-            <input type="text" placeholder="Hora (ej: 8:30 PM)" value="${ev.time || ''}" class="ev-time rounded border border-slate-300 p-1.5 text-xs">
-            <input type="text" placeholder="URL Entradas / Info" value="${ev.ticketUrl || ''}" class="ev-ticket sm:col-span-3 rounded border border-slate-300 p-1.5 text-xs font-mono">
-          </div>
-        `;
-        eventsContainer.appendChild(item);
-      });
-      eventsContainer.querySelectorAll('.btn-ev-up').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectFormData();
-          const i = parseInt(btn.dataset.index, 10);
-          moveItemInArray(currentConfig.events, i, i - 1);
-          renderEvents(currentConfig.events);
-        });
-      });
-      eventsContainer.querySelectorAll('.btn-ev-down').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectFormData();
-          const i = parseInt(btn.dataset.index, 10);
-          moveItemInArray(currentConfig.events, i, i + 1);
-          renderEvents(currentConfig.events);
-        });
-      });
-      eventsContainer.querySelectorAll('.btn-ev-del').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectFormData();
-          const i = parseInt(btn.dataset.index, 10);
-          currentConfig.events.splice(i, 1);
-          renderEvents(currentConfig.events);
-        });
-      });
-    }
-    document.getElementById('btnAddEvent').addEventListener('click', () => {
-      collectFormData();
-      if (!currentConfig.events) currentConfig.events = [];
-      currentConfig.events.push({ id: `ev-${currentConfig.events.length + 1}`, title: "", date: "", venue: "", city: "", visible: true });
-      renderEvents(currentConfig.events);
-    });
-
-    // --- 7. GESTOR DE VENTAJAS ---
-    const advantagesContainer = document.getElementById('advantagesContainer');
-    function renderAdvantages(advList) {
-      advantagesContainer.innerHTML = '';
-      if (!advList || advList.length === 0) {
-        advantagesContainer.innerHTML = '<p class="text-xs text-slate-400 italic">No hay ventajas configuradas.</p>';
-        return;
-      }
-      advList.forEach((adv, idx) => {
-        const item = document.createElement('div');
-        item.className = 'rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2';
-        item.innerHTML = `
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5">
-              <button type="button" class="btn-icon bg-white text-slate-600 btn-adv-up" data-index="${idx}">▲</button>
-              <button type="button" class="btn-icon bg-white text-slate-600 btn-adv-down" data-index="${idx}">▼</button>
-              <span class="text-xs font-bold text-slate-700 uppercase">Ventaja #${idx + 1}</span>
-            </div>
-            <button type="button" class="text-xs text-red-600 font-bold btn-adv-del" data-index="${idx}">Eliminar</button>
-          </div>
-          <div class="space-y-1.5">
-            <input type="text" placeholder="Título de la ventaja *" value="${adv.title || ''}" class="adv-title w-full rounded border border-slate-300 p-1.5 text-xs font-bold">
-            <textarea placeholder="Descripción de la ventaja *" class="adv-desc w-full rounded border border-slate-300 p-1.5 text-xs" rows="2">${adv.description || ''}</textarea>
-          </div>
-        `;
-        advantagesContainer.appendChild(item);
-      });
-      advantagesContainer.querySelectorAll('.btn-adv-up').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectFormData();
-          const i = parseInt(btn.dataset.index, 10);
-          moveItemInArray(currentConfig.advantages, i, i - 1);
-          renderAdvantages(currentConfig.advantages);
-        });
-      });
-      advantagesContainer.querySelectorAll('.btn-adv-down').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectFormData();
-          const i = parseInt(btn.dataset.index, 10);
-          moveItemInArray(currentConfig.advantages, i, i + 1);
-          renderAdvantages(currentConfig.advantages);
-        });
-      });
-      advantagesContainer.querySelectorAll('.btn-adv-del').forEach(btn => {
-        btn.addEventListener('click', () => {
-          collectFormData();
-          const i = parseInt(btn.dataset.index, 10);
-          currentConfig.advantages.splice(i, 1);
-          renderAdvantages(currentConfig.advantages);
-        });
-      });
-    }
-    document.getElementById('btnAddAdvantage').addEventListener('click', () => {
-      collectFormData();
-      if (!currentConfig.advantages) currentConfig.advantages = [];
-      currentConfig.advantages.push({ title: "", description: "" });
-      renderAdvantages(currentConfig.advantages);
-    });
-
-    // --- RECOLECTOR DE DATOS COMPLETO ---
+    /** Configuración que se guardaría ahora (no modifica currentConfig salvo la sincronización de listas). */
     function collectFormData() {
-      currentConfig.id = document.getElementById('clientId').value.trim().toLowerCase();
-      currentConfig.businessName = document.getElementById('businessName').value.trim();
-      currentConfig.tagline = document.getElementById('tagline').value.trim();
-      currentConfig.logoUrl = document.getElementById('logoUrl').value.trim() || undefined;
-
-      const selectedVariant = document.querySelector('input[name="variant"]:checked');
-      currentConfig.variant = selectedVariant ? selectedVariant.value : 'artist';
-
-      currentConfig.colors = {
-        primary: document.getElementById('primaryColor').value.trim(),
-        primaryHover: document.getElementById('primaryHoverColor').value.trim(),
-      };
-
-      currentConfig.hero = {
-        badge: document.getElementById('heroBadge').value.trim() || undefined,
-        title: document.getElementById('heroTitle').value.trim(),
-        description: document.getElementById('heroDesc').value.trim(),
-        heroImage: document.getElementById('heroImage').value.trim() || undefined,
-        ctaPrimary: {
-          text: document.getElementById('heroCtaText').value.trim(),
-          link: document.getElementById('heroCtaLink').value.trim(),
-        },
-        ctaSecondary: document.getElementById('heroCtaSecText').value.trim() ? {
-          text: document.getElementById('heroCtaSecText').value.trim(),
-          link: document.getElementById('heroCtaSecLink').value.trim(),
-        } : undefined,
-      };
-
-      // About & Highlights
-      const hlInputs = document.querySelectorAll('.hl-input');
-      const hlValues = Array.from(hlInputs).map(inp => inp.value.trim()).filter(Boolean);
-      currentConfig.about = {
-        title: document.getElementById('aboutTitle').value.trim(),
-        description: document.getElementById('aboutDesc').value.trim(),
-        highlights: hlValues.length > 0 ? hlValues : undefined,
-      };
-
-      // Artist Profile
-      currentConfig.artistProfile = {
-        stageName: currentConfig.businessName,
-        genre: document.getElementById('artGenre').value.trim() || undefined,
-        bookingZone: document.getElementById('artZone').value.trim() || undefined,
-        portraitImage: document.getElementById('artPortrait').value.trim() || undefined,
-        quote: document.getElementById('artQuote').value.trim() || undefined,
-        bio: currentConfig.about.description,
-        achievements: hlValues.length > 0 ? hlValues : undefined,
-      };
-
-      // Servicios
-      const srvDom = document.querySelectorAll('#servicesContainer > div');
-      if (srvDom.length > 0) {
-        currentConfig.services = Array.from(srvDom).map(item => ({
-          id: (item.querySelector('.srv-id')?.value || '').trim().toLowerCase() || `srv-${Date.now()}`,
-          title: (item.querySelector('.srv-title')?.value || '').trim(),
-          description: (item.querySelector('.srv-desc')?.value || '').trim(),
-          price: (item.querySelector('.srv-price')?.value || '').trim() || undefined,
-          duration: (item.querySelector('.srv-duration')?.value || '').trim() || undefined,
-          badge: (item.querySelector('.srv-badge')?.value || '').trim() || undefined,
-        })).filter(s => s.title.length > 0);
-      } else {
-        currentConfig.services = [];
-      }
-
-      // Paquetes
-      const pkgDom = document.querySelectorAll('#packagesContainer > div');
-      if (pkgDom.length > 0) {
-        currentConfig.packages = Array.from(pkgDom).map(item => {
-          const feats = (item.querySelector('.pkg-feat')?.value || '')
-            .split(',')
-            .map(f => f.trim())
-            .filter(Boolean);
-          return {
-            id: (item.querySelector('.pkg-id')?.value || '').trim().toLowerCase() || `pkg-${Date.now()}`,
-            title: (item.querySelector('.pkg-title')?.value || '').trim(),
-            description: (item.querySelector('.pkg-desc')?.value || '').trim(),
-            price: (item.querySelector('.pkg-price')?.value || '').trim() || undefined,
-            currency: (item.querySelector('.pkg-curr')?.value || '').trim() || undefined,
-            duration: (item.querySelector('.pkg-dur')?.value || '').trim() || undefined,
-            features: feats.length > 0 ? feats : undefined,
-            visible: true,
-          };
-        }).filter(p => p.title.length > 0);
-      } else {
-        currentConfig.packages = [];
-      }
-
-      // Videos
-      const vidDom = document.querySelectorAll('#videosContainer > div');
-      if (vidDom.length > 0) {
-        currentConfig.videos = Array.from(vidDom).map(item => ({
-          id: `vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-          title: (item.querySelector('.vid-title')?.value || '').trim(),
-          url: (item.querySelector('.vid-url')?.value || '').trim(),
-          description: (item.querySelector('.vid-desc')?.value || '').trim() || undefined,
-          platform: 'youtube',
-        })).filter(v => v.title && v.url);
-      } else {
-        currentConfig.videos = [];
-      }
-
-      // Galería
-      const galDom = document.querySelectorAll('#galleryContainer > div');
-      if (galDom.length > 0) {
-        currentConfig.gallery = Array.from(galDom).map(item => ({
-          id: `img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-          url: (item.querySelector('.gal-url')?.value || '').trim(),
-          alt: (item.querySelector('.gal-alt')?.value || '').trim() || 'Fotografía de presentación',
-          caption: (item.querySelector('.gal-cap')?.value || '').trim() || undefined,
-        })).filter(g => g.url);
-      } else {
-        currentConfig.gallery = [];
-      }
-
-      // Eventos
-      const evDom = document.querySelectorAll('#eventsContainer > div');
-      if (evDom.length > 0) {
-        currentConfig.events = Array.from(evDom).map(item => ({
-          id: `ev-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-          title: (item.querySelector('.ev-title')?.value || '').trim(),
-          date: (item.querySelector('.ev-date')?.value || '').trim(),
-          venue: (item.querySelector('.ev-venue')?.value || '').trim(),
-          city: (item.querySelector('.ev-city')?.value || '').trim(),
-          time: (item.querySelector('.ev-time')?.value || '').trim() || undefined,
-          ticketUrl: (item.querySelector('.ev-ticket')?.value || '').trim() || undefined,
-          visible: true,
-        })).filter(e => e.title && e.date);
-      } else {
-        currentConfig.events = [];
-      }
-
-      // Ventajas
-      const advDom = document.querySelectorAll('#advantagesContainer > div');
-      if (advDom.length > 0) {
-        currentConfig.advantages = Array.from(advDom).map(item => ({
-          title: (item.querySelector('.adv-title')?.value || '').trim(),
-          description: (item.querySelector('.adv-desc')?.value || '').trim(),
-        })).filter(a => a.title.length > 0);
-      } else {
-        currentConfig.advantages = [];
-      }
-
-      // Contacto & Horarios
-      const schInputs = document.querySelectorAll('.sch-input');
-      const schValues = Array.from(schInputs).map(inp => inp.value.trim()).filter(Boolean);
-
-      const soc = {
-        spotify: document.getElementById('socSpotify').value.trim() || undefined,
-        youtube: document.getElementById('socYouTube').value.trim() || undefined,
-        instagram: document.getElementById('socIg').value.trim() || undefined,
-        tiktok: document.getElementById('socTk').value.trim() || undefined,
-        facebook: document.getElementById('socFb').value.trim() || undefined,
-        appleMusic: document.getElementById('socApple').value.trim() || undefined,
-        soundcloud: document.getElementById('socSoundCloud').value.trim() || undefined,
-        linkedin: document.getElementById('socLk').value.trim() || undefined,
-      };
-      const hasSoc = Object.values(soc).some(Boolean);
-
-      currentConfig.contact = {
-        whatsapp: document.getElementById('contactWa').value.trim() || undefined,
-        whatsappDefaultMessage: document.getElementById('contactWaMsg').value.trim() || undefined,
-        phone: document.getElementById('contactPhone').value.trim() || undefined,
-        email: document.getElementById('contactEmail').value.trim() || undefined,
-        address: document.getElementById('contactAddress').value.trim() || undefined,
-        city: document.getElementById('contactCity').value.trim() || undefined,
-        schedule: schValues.length > 0 ? schValues : undefined,
-        socialLinks: hasSoc ? soc : undefined,
-      };
-
-      // Títulos Personalizados
-      currentConfig.sectionTitles = {
-        servicesTitle: document.getElementById('titleServices').value.trim() || undefined,
-        advantagesTitle: document.getElementById('titleAdvantages').value.trim() || undefined,
-        contactTitle: document.getElementById('titleContact').value.trim() || undefined,
-        videosTitle: document.getElementById('titleVideos').value.trim() || undefined,
-      };
-
-      // Visibilidad
-      currentConfig.sectionVisibility = {
-        about: document.getElementById('visAbout').checked,
-        services: document.getElementById('visServices').checked,
-        packages: document.getElementById('visPackages').checked,
-        videos: document.getElementById('visVideos').checked,
-        gallery: document.getElementById('visGallery').checked,
-        events: document.getElementById('visEvents').checked,
-        advantages: document.getElementById('visAdvantages').checked,
-        schedule: document.getElementById('visSchedule').checked,
-        contact: document.getElementById('visContact').checked,
-      };
-
-      // SEO
-      const kw = document.getElementById('seoKeywords').value.trim();
-      currentConfig.seo = {
-        title: document.getElementById('seoTitle').value.trim(),
-        description: document.getElementById('seoDesc').value.trim(),
-        keywords: kw ? kw.split(',').map(s => s.trim()).filter(Boolean) : undefined,
-      };
-
-      return currentConfig;
+      syncAllLists();
+      return FM.buildConfig(currentConfig, readForm(), { highlights: highlightsDraft, schedule: scheduleDraft });
     }
 
-    // Actualizar Vista Previa
-    function updateJsonPreview() {
-      const data = collectFormData();
-      document.getElementById('jsonPreview').textContent = JSON.stringify(data, null, 2);
-
-      // Resumen visual
-      const summary = document.getElementById('livePreviewSummary');
-      summary.innerHTML = `
-        <div class="rounded-lg bg-white p-2.5 border border-slate-200">
-          <span class="text-slate-400 block text-[10px] uppercase">Plantilla</span>
-          <span class="font-bold text-slate-800 uppercase">${data.variant}</span>
-        </div>
-        <div class="rounded-lg bg-white p-2.5 border border-slate-200">
-          <span class="text-slate-400 block text-[10px] uppercase">Color Primario</span>
-          <span class="inline-block h-3.5 w-3.5 rounded-full mr-1.5 align-middle" style="background-color: ${data.colors.primary}"></span>
-          <span class="font-mono text-slate-700">${data.colors.primary}</span>
-        </div>
-        <div class="rounded-lg bg-white p-2.5 border border-slate-200">
-          <span class="text-slate-400 block text-[10px] uppercase">Servicios / Paquetes</span>
-          <span class="font-bold text-slate-800">${(data.services?.length || 0) + (data.packages?.length || 0)} ítems</span>
-        </div>
-        <div class="rounded-lg bg-white p-2.5 border border-slate-200">
-          <span class="text-slate-400 block text-[10px] uppercase">Multimedia</span>
-          <span class="font-bold text-slate-800">${(data.videos?.length || 0)} videos / ${(data.gallery?.length || 0)} fotos</span>
-        </div>
-      `;
-    }
-
-    // Llenar Formulario con Datos del Cliente
     function populateForm(data) {
-      currentConfig = JSON.parse(JSON.stringify(data));
+      currentConfig = FM.clone(data);
+      const form = FM.formFromConfig(data);
+      for (const [k, id] of Object.entries(SIMPLE_INPUTS)) $(id).value = form[k];
+      $('primaryColorPicker').value = isHex(form.primaryColor) && form.primaryColor.length === 7 ? form.primaryColor : '#d97706';
+      $('primaryHoverColorPicker').value = isHex(form.primaryHoverColor) && form.primaryHoverColor.length === 7 ? form.primaryHoverColor : '#b45309';
+      const radio = document.querySelector(`input[name="variant"][value="${CSS.escape(form.variant)}"]`);
+      if (radio) radio.checked = true;
+      for (const [k, id] of Object.entries(SOCIAL_INPUTS)) $(id).value = form.social[k];
+      for (const [k, id] of Object.entries(TITLE_INPUTS)) $(id).value = form.titles[k];
+      for (const [k, id] of Object.entries(VISIBILITY_INPUTS)) $(id).checked = form.visibility[k];
 
-      document.getElementById('clientId').value = data.id || '';
-      document.getElementById('businessName').value = data.businessName || '';
-      document.getElementById('tagline').value = data.tagline || '';
-      document.getElementById('logoUrl').value = data.logoUrl || '';
-
-      const variantRadio = document.querySelector(`input[name="variant"][value="${data.variant}"]`);
-      if (variantRadio) variantRadio.checked = true;
-
-      document.getElementById('primaryColor').value = data.colors?.primary || '#d97706';
-      document.getElementById('primaryColorPicker').value = data.colors?.primary || '#d97706';
-      document.getElementById('primaryHoverColor').value = data.colors?.primaryHover || '#b45309';
-      document.getElementById('primaryHoverColorPicker').value = data.colors?.primaryHover || '#b45309';
-
-      document.getElementById('heroBadge').value = data.hero?.badge || '';
-      document.getElementById('heroTitle').value = data.hero?.title || '';
-      document.getElementById('heroDesc').value = data.hero?.description || '';
-      document.getElementById('heroImage').value = data.hero?.heroImage || '';
-      document.getElementById('heroCtaText').value = data.hero?.ctaPrimary?.text || 'Contactar';
-      document.getElementById('heroCtaLink').value = data.hero?.ctaPrimary?.link || '#contacto';
-      document.getElementById('heroCtaSecText').value = data.hero?.ctaSecondary?.text || '';
-      document.getElementById('heroCtaSecLink').value = data.hero?.ctaSecondary?.link || '';
-
-      // About & Highlights
-      document.getElementById('aboutTitle').value = data.about?.title || '';
-      document.getElementById('aboutDesc').value = data.about?.description || '';
-      renderHighlights(data.about?.highlights || data.artistProfile?.achievements || []);
-
-      // Artist Profile
-      document.getElementById('artGenre').value = data.artistProfile?.genre || '';
-      document.getElementById('artZone').value = data.artistProfile?.bookingZone || '';
-      document.getElementById('artPortrait').value = data.artistProfile?.portraitImage || '';
-      document.getElementById('artQuote').value = data.artistProfile?.quote || '';
-
-      // Listas
-      renderServices(data.services || []);
-      renderPackages(data.packages || []);
-      renderVideos(data.videos || []);
-      renderGallery(data.gallery || []);
-      renderEvents(data.events || []);
-      renderAdvantages(data.advantages || []);
-      renderSchedule(data.contact?.schedule || []);
-
-      // Contacto
-      document.getElementById('contactWa').value = data.contact?.whatsapp || '';
-      document.getElementById('contactWaMsg').value = data.contact?.whatsappDefaultMessage || '';
-      document.getElementById('contactPhone').value = data.contact?.phone || '';
-      document.getElementById('contactEmail').value = data.contact?.email || '';
-      document.getElementById('contactAddress').value = data.contact?.address || '';
-      document.getElementById('contactCity').value = data.contact?.city || '';
-
-      // Redes
-      document.getElementById('socSpotify').value = data.contact?.socialLinks?.spotify || '';
-      document.getElementById('socYouTube').value = data.contact?.socialLinks?.youtube || '';
-      document.getElementById('socIg').value = data.contact?.socialLinks?.instagram || '';
-      document.getElementById('socTk').value = data.contact?.socialLinks?.tiktok || '';
-      document.getElementById('socFb').value = data.contact?.socialLinks?.facebook || '';
-      document.getElementById('socApple').value = data.contact?.socialLinks?.appleMusic || '';
-      document.getElementById('socSoundCloud').value = data.contact?.socialLinks?.soundcloud || '';
-      document.getElementById('socLk').value = data.contact?.socialLinks?.linkedin || '';
-
-      // Visibilidad
-      const vis = data.sectionVisibility || {};
-      document.getElementById('visAbout').checked = vis.about !== false;
-      document.getElementById('visServices').checked = vis.services !== false;
-      document.getElementById('visPackages').checked = vis.packages !== false;
-      document.getElementById('visVideos').checked = vis.videos !== false;
-      document.getElementById('visGallery').checked = vis.gallery !== false;
-      document.getElementById('visEvents').checked = vis.events !== false;
-      document.getElementById('visAdvantages').checked = vis.advantages !== false;
-      document.getElementById('visSchedule').checked = vis.schedule !== false;
-      document.getElementById('visContact').checked = vis.contact !== false;
-
-      // Títulos
-      const t = data.sectionTitles || {};
-      document.getElementById('titleServices').value = t.servicesTitle || '';
-      document.getElementById('titleAdvantages').value = t.advantagesTitle || '';
-      document.getElementById('titleContact').value = t.contactTitle || '';
-      document.getElementById('titleVideos').value = t.videosTitle || '';
-
-      // SEO
-      document.getElementById('seoTitle').value = data.seo?.title || '';
-      document.getElementById('seoDesc').value = data.seo?.description || '';
-      document.getElementById('seoKeywords').value = (data.seo?.keywords || []).join(', ');
+      highlightsDraft = FM.getHighlights(data);
+      scheduleDraft = ((data.contact && data.contact.schedule) || []).slice();
+      Object.keys(STRING_LISTS).forEach(renderStringList);
+      Object.keys(OBJECT_LISTS).forEach(renderObjectList);
 
       updateCounters();
       updateJsonPreview();
     }
 
-    // Contadores de caracteres SEO
-    function updateCounters() {
-      document.getElementById('titleCounter').textContent = `${document.getElementById('seoTitle').value.length} / 60`;
-      document.getElementById('descCounter').textContent = `${document.getElementById('seoDesc').value.length} / 160`;
+    // --- Vista previa (JSON + resumen) ---
+    function updateJsonPreview() {
+      const data = collectFormData();
+      $('jsonPreview').textContent = JSON.stringify(data, null, 2);
+      const count = (k) => (Array.isArray(data[k]) ? data[k].length : 0);
+      $('livePreviewSummary').innerHTML = `
+        <div class="rounded-lg bg-white p-2.5 border border-slate-200">
+          <span class="text-slate-400 block text-[10px] uppercase">Plantilla</span>
+          <span class="font-bold text-slate-800 uppercase">${esc(data.variant)}</span>
+        </div>
+        <div class="rounded-lg bg-white p-2.5 border border-slate-200">
+          <span class="text-slate-400 block text-[10px] uppercase">Color Primario</span>
+          <span class="inline-block h-3.5 w-3.5 rounded-full mr-1.5 align-middle" style="background-color: ${isHex(data.colors.primary) ? data.colors.primary : 'transparent'}"></span>
+          <span class="font-mono text-slate-700">${esc(data.colors.primary)}</span>
+        </div>
+        <div class="rounded-lg bg-white p-2.5 border border-slate-200">
+          <span class="text-slate-400 block text-[10px] uppercase">Servicios / Paquetes</span>
+          <span class="font-bold text-slate-800">${count('services') + count('packages')} ítems</span>
+        </div>
+        <div class="rounded-lg bg-white p-2.5 border border-slate-200">
+          <span class="text-slate-400 block text-[10px] uppercase">Multimedia</span>
+          <span class="font-bold text-slate-800">${count('videos')} videos / ${count('gallery')} fotos</span>
+        </div>`;
     }
-    document.getElementById('seoTitle').addEventListener('input', updateCounters);
-    document.getElementById('seoDesc').addEventListener('input', updateCounters);
 
-    // Cargar Lista de Clientes
+    function updateCounters() {
+      $('titleCounter').textContent = `${$('seoTitle').value.length} / 60`;
+      $('descCounter').textContent = `${$('seoDesc').value.length} / 160`;
+    }
+    $('seoTitle').addEventListener('input', updateCounters);
+    $('seoDesc').addEventListener('input', updateCounters);
+
+    // --- Clientes existentes ---
     async function fetchExistingClients() {
       try {
-        const res = await fetch('/api/clients');
-        const json = await res.json();
-        if (json.success && json.clients) {
-          const select = document.getElementById('existingClients');
-          select.innerHTML = '<option value="">-- Cargar cliente --</option>';
-          json.clients.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c;
-            opt.textContent = c;
-            select.appendChild(opt);
-          });
-        }
+        const { json } = await api('/api/clients');
+        if (!json.success) { showAlert(esc(json.error || 'No se pudo listar los clientes'), 'error'); return; }
+        const select = $('existingClients');
+        select.innerHTML = '<option value="">-- Cargar cliente --</option>';
+        json.clients.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c;
+          opt.textContent = c;
+          select.appendChild(opt);
+        });
       } catch (err) {
-        console.error("Error al cargar clientes:", err);
+        showAlert('Error de conexión con el generador local', 'error');
       }
     }
 
-    document.getElementById('btnLoadClient').addEventListener('click', async () => {
-      const selected = document.getElementById('existingClients').value;
+    $('btnLoadClient').addEventListener('click', async () => {
+      const selected = $('existingClients').value;
       if (!selected) return;
-
       try {
-        const res = await fetch(`/api/client/${selected}`);
-        const json = await res.json();
+        const { json } = await api(`/api/client/${encodeURIComponent(selected)}`);
         if (json.success && json.data) {
           populateForm(json.data);
-          showAlert(`Cliente "${selected}" cargado exitosamente.`, 'success');
+          showAlert(`Cliente "${esc(selected)}" cargado.`, 'success');
         } else {
-          showAlert(json.error || 'Error al cargar cliente', 'error');
+          showAlert(esc(json.error || 'Error al cargar cliente'), 'error');
         }
       } catch (err) {
         showAlert('Error de conexión con el generador local', 'error');
       }
     });
 
-    document.getElementById('btnNewClient').addEventListener('click', () => {
+    $('btnNewClient').addEventListener('click', () => {
       populateForm({
         id: "nuevo-artista",
         businessName: "Nuevo Artista",
@@ -1529,9 +1007,9 @@
         },
         about: {
           title: "Pasión musical en vivo",
-          description: "Músico profesional con amplia experiencia en recitales y eventos.",
-          highlights: ["Más de 10 años en escena", "Repertorio personalizado"]
+          description: "Músico profesional con amplia experiencia en recitales y eventos."
         },
+        artistProfile: { achievements: ["Más de 10 años en escena", "Repertorio personalizado"] },
         services: [],
         packages: [
           { id: "pkg-1", title: "Show Solista", description: "Piano y voz en directo para cócteles y ceremonias.", visible: true }
@@ -1551,71 +1029,74 @@
       showAlert('Formulario listo para nuevo cliente.', 'info');
     });
 
-    // Guardar Cliente
-    document.getElementById('btnSaveClient').addEventListener('click', async () => {
+    // --- Mensajes de validación comprensibles ---
+    const SECTION_TABS = {
+      id: ['tab-identity', 'Identidad'], businessName: ['tab-identity', 'Identidad'], tagline: ['tab-identity', 'Identidad'],
+      variant: ['tab-identity', 'Identidad'], colors: ['tab-identity', 'Identidad'], logoUrl: ['tab-identity', 'Identidad'],
+      hero: ['tab-hero', 'Portada'], about: ['tab-about', 'Biografía / Nosotros'], artistProfile: ['tab-about', 'Biografía / Nosotros'],
+      services: ['tab-services', 'Servicios'], packages: ['tab-services', 'Paquetes'], videos: ['tab-multimedia', 'Videos'],
+      gallery: ['tab-multimedia', 'Galería'], events: ['tab-events', 'Presentaciones'], advantages: ['tab-advantages', 'Ventajas'],
+      contact: ['tab-contact', 'Contacto'], sectionTitles: ['tab-visibility', 'Títulos'], sectionVisibility: ['tab-visibility', 'Visibilidad'],
+      seo: ['tab-review', 'SEO'],
+    };
+    function describeField(fieldPath) {
+      const parts = String(fieldPath || '').split('.');
+      const [tab, label] = SECTION_TABS[parts[0]] || [null, 'Configuración'];
+      const index = parts.find(p => /^\d+$/.test(p));
+      const where = index !== undefined ? `${label} #${Number(index) + 1}` : label;
+      return { tab, text: `${where} › ${parts.filter(p => !/^\d+$/.test(p)).slice(1).join('.') || parts[0]}` };
+    }
+
+    $('btnSaveClient').addEventListener('click', async () => {
       const config = collectFormData();
-      const overwrite = document.getElementById('chkOverwrite').checked;
-
+      const overwrite = $('chkOverwrite').checked;
       showAlert('Validando y guardando...', 'info');
-
       try {
-        const res = await fetch('/api/save', {
+        const { res, json } = await api('/api/save', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ config, overwrite }),
         });
-
-        const json = await res.json();
-
-        if (res.status === 409) {
-          showAlert(json.message, 'warning');
+        if (res.status === 409) { showAlert(esc(json.message), 'warning'); return; }
+        if (res.status === 422 && Array.isArray(json.details)) {
+          const items = json.details.map(d => {
+            const info = describeField(d.field);
+            const link = info.tab ? ` <button type="button" class="underline font-semibold" data-goto-tab="${esc(info.tab)}">Ir a la pestaña</button>` : '';
+            return `<li><strong>${esc(info.text)}:</strong> ${esc(d.message)}${link}</li>`;
+          }).join('');
+          showAlert(`<strong>Revisa estos campos antes de guardar:</strong><ul class="list-disc ml-5 mt-1 space-y-0.5">${items}</ul>`, 'error');
+          $('validationAlert').querySelectorAll('[data-goto-tab]').forEach(b => b.addEventListener('click', () => showTab(b.dataset.gotoTab)));
           return;
         }
-
-        if (res.status === 422) {
-          let errorMsg = '<strong>Errores de validación:</strong><ul class="list-disc ml-5 mt-1">';
-          json.details.forEach(d => {
-            errorMsg += `<li><strong>${d.field}:</strong> ${d.message}</li>`;
-          });
-          errorMsg += '</ul>';
-          showAlert(errorMsg, 'error');
-          return;
-        }
-
-        if (!json.success) {
-          showAlert(json.error || 'Error al guardar configuración', 'error');
-          return;
-        }
-
-        showAlert(`✓ ${json.message}`, 'success');
+        if (!json.success) { showAlert(esc(json.error || 'Error al guardar configuración'), 'error'); return; }
+        const backupNote = json.backup ? ` Copia de seguridad del archivo anterior: .generator-backups/${esc(json.backup)}` : '';
+        showAlert(`✓ ${esc(json.message)}.${backupNote}`, 'success');
+        currentConfig = FM.clone(config);
         fetchExistingClients();
       } catch (err) {
-        showAlert(`Error de conexión con el servidor local: ${err.message}`, 'error');
+        showAlert(`Error de conexión con el servidor local: ${esc(err.message)}`, 'error');
       }
     });
 
+    /** `html` debe venir ya escapado: los textos dinámicos se pasan siempre por esc(). */
     function showAlert(html, type) {
-      const alert = document.getElementById('validationAlert');
-      alert.classList.remove('hidden', 'bg-emerald-50', 'text-emerald-800', 'border-emerald-300', 'bg-red-50', 'text-red-800', 'border-red-300', 'bg-amber-50', 'text-amber-800', 'border-amber-300', 'bg-blue-50', 'text-blue-800');
+      const alert = $('validationAlert');
+      alert.classList.remove('hidden', 'bg-emerald-50', 'text-emerald-800', 'border-emerald-300', 'bg-red-50', 'text-red-800', 'border-red-300', 'bg-amber-50', 'text-amber-800', 'border-amber-300', 'bg-blue-50', 'text-blue-800', 'border-blue-200');
       alert.classList.add('border');
-
-      if (type === 'success') {
-        alert.classList.add('bg-emerald-50', 'text-emerald-800', 'border-emerald-300');
-      } else if (type === 'error') {
-        alert.classList.add('bg-red-50', 'text-red-800', 'border-red-300');
-      } else if (type === 'warning') {
-        alert.classList.add('bg-amber-50', 'text-amber-800', 'border-amber-300');
-      } else {
-        alert.classList.add('bg-blue-50', 'text-blue-800', 'border-blue-200');
-      }
-
+      const styles = {
+        success: ['bg-emerald-50', 'text-emerald-800', 'border-emerald-300'],
+        error: ['bg-red-50', 'text-red-800', 'border-red-300'],
+        warning: ['bg-amber-50', 'text-amber-800', 'border-amber-300'],
+        info: ['bg-blue-50', 'text-blue-800', 'border-blue-200'],
+      };
+      alert.classList.add(...(styles[type] || styles.info));
       alert.innerHTML = html;
     }
 
-    // Inicializar
+    // --- Inicio ---
     fetchExistingClients().then(() => {
-      document.getElementById('existingClients').value = 'demo-artist';
-      document.getElementById('btnLoadClient').click();
+      $('existingClients').value = 'demo-artist';
+      $('btnLoadClient').click();
     });
   </script>
 </body>
