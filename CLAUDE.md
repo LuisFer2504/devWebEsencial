@@ -16,7 +16,7 @@ visuales. Planes, precios y procesos de venta **no existen en el código** (ver 
 
 ## Stack
 
-Next.js 15.1.7 (App Router, `output: "export"`), React 19, TypeScript estricto, Tailwind CSS **3.4**
+Next.js 15.5.29 (App Router, `output: "export"`; `postcss` interno forzado a 8.5.31 con `overrides`), React 19, TypeScript estricto, Tailwind CSS **3.4**
 (¡no v4!), Zod 4, lucide-react, Vitest 5. Node ≥ 22.6 (el generador usa `--experimental-strip-types`).
 
 ## Estructura
@@ -29,7 +29,7 @@ src/app/layout.tsx|page.tsx  Metadatos SEO + switch de variante
 src/components/shared/       Navbar (client component), ContactSection, Footer, WhatsAppFloatingButton
 src/components/variants/     ProfessionalTheme, CommerceTheme, BeautyTheme, ArtistTheme
 src/utils/                   whatsapp.ts (wa.me), media.ts (embeds YouTube/Vimeo)
-tools/generator/             Editor local: server.mjs (Node http, :3001) + index.html (vanilla JS)
+tools/generator/             Editor local: server.mjs (Node http, :3001), index.html (vanilla JS), form-model.js
 tools/qa/                    QA local: build-all, serve (gzip) y page-audit para verificar con MCP
 tests/                       Vitest (producto + guardia de producción)
 .claude/                     Skills, settings.json compartido y hooks de seguridad
@@ -47,8 +47,10 @@ tests/                       Vitest (producto + guardia de producción)
 | `npm run lint` | `next lint` |
 | `npm run qa:build` / `qa:serve` | Compila todos los clientes en `.qa/` y los sirve para verificar con MCP |
 
-En PowerShell: `$env:CLIENT_ID='demo-artist'; npm run build`. Sin `CLIENT_ID` se usa
-**silenciosamente** `demo-professional`. `npm start` no sirve con `output: "export"`; para ver `out/`
+En PowerShell: `$env:CLIENT_ID='demo-artist'; npm run build`. **`CLIENT_ID` es obligatorio en todo
+build** (`next build`, Vercel, CI): si falta, no es un slug válido o no existe `clients/<id>.json`, el
+build se detiene antes de compilar (`src/config/client-id.ts`). Solo `npm run dev` usa
+`demo-professional` si falta, con un aviso. `npm start` no sirve con `output: "export"`; para ver `out/`
 usa un servidor estático.
 
 Validación mínima antes de entregar cualquier cambio: `npm test && npm run type-check && npm run lint`
@@ -68,7 +70,8 @@ segunda capa; no sustituye la protección de GitHub (pendiente). Si algo se bloq
 ## Despliegue
 
 Un proyecto Vercel por cliente, mismo repo, env `CLIENT_ID=<id>`. No hay CI, ni scripts de deploy,
-ni dominios configurados en el repo. **Nunca despliegues ni publiques sin pedido explícito.**
+ni dominios configurados en el repo. Diseño para evitar recompilar todos los proyectos en cada merge:
+`docs/VERCEL_DEPLOYMENTS.md` (no implementado). **Nunca despliegues ni publiques sin pedido explícito.**
 
 ## Reglas obligatorias
 
@@ -85,9 +88,11 @@ ni dominios configurados en el repo. **Nunca despliegues ni publiques sin pedido
    `flex-2`, `bg-radial-*`…): no se generan. Usa `aspect-[4/5]`, `shadow-sm`, etc.
 6. **Aislamiento**: nada de `tools/` puede importarse desde `src/`. El loader usa `fs` y solo corre en
    build (Server Components); no lo importes en componentes `"use client"`.
-7. **Generador**: guarda el JSON *después* de pasar por Zod (que elimina claves desconocidas y aplica
-   defaults). Hoy el formulario pierde campos al re-guardar (ver `references/GENERATOR.md`): no
-   re-guardes clientes reales desde el editor hasta corregirlo.
+7. **Generador**: guarda el JSON *después* de pasar por Zod (que elimina claves **no declaradas en el
+   esquema** y aplica defaults). El formulario conserva todos los campos del esquema
+   (`tools/generator/form-model.js`, probado con todos los clientes). La API exige token de sesión, Host
+   local y mismo origen, y guarda una copia en `.generator-backups/` antes de sobrescribir. Todo campo
+   nuevo del esquema debe probarse en `tests/generator-form.test.ts`.
 8. **Seguridad**: no secretos en `clients/*.json` (todo su contenido termina en HTML público). No
    expongas el generador fuera de `127.0.0.1`. No inventes resultados de pruebas.
 9. No añadas dependencias sin justificarlo; no borres código "aparentemente muerto" sin entenderlo.

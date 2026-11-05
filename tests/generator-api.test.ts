@@ -1,222 +1,257 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import http from "node:http";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
-import { ClientConfigSchema } from "../src/schemas/client.schema";
+import type { AddressInfo } from "node:net";
+// Servidor REAL del generador (no una copia del handler).
+import { createGeneratorServer } from "../tools/generator/server.mjs";
 
-const TEST_PORT = 3099;
-const CLIENTS_DIR = path.resolve(process.cwd(), "clients");
-const TEST_CLIENT_ID = "test-temporal-generador";
+const REAL_CLIENTS = path.resolve("clients");
+const TOKEN = "token-de-prueba-0123456789abcdef";
 
-describe("Herramienta Generador Local - API y Seguridad", () => {
-  let server: http.Server;
+let tmp: string;
+const realSnapshot = new Map<string, string>();
+let clientsDir: string;
+let backupsDir: string;
+let server: http.Server;
+let port: number;
 
-  beforeAll(async () => {
-    // Montamos el manejador idéntico al de server.mjs
-    server = http.createServer((req, res) => {
-      const url = new URL(req.url || "/", `http://${req.headers.host}`);
+interface Res {
+  status: number;
+  headers: http.IncomingHttpHeaders;
+  body: string;
+  json: () => any; // eslint-disable-line @typescript-eslint/no-explicit-any
+}
 
-      if (req.method === "GET" && url.pathname === "/api/clients") {
-        const files = fs.readdirSync(CLIENTS_DIR)
-          .filter((f) => f.endsWith(".json"))
-          .map((f) => f.replace(".json", ""));
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ success: true, clients: files }));
-        return;
-      }
-
-      if (req.method === "GET" && url.pathname.startsWith("/api/client/")) {
-        const clientId = url.pathname.replace("/api/client/", "").trim();
-        const sanitizedId = clientId.toLowerCase().replace(/[^a-z0-9-]/g, "");
-        const target = path.join(CLIENTS_DIR, `${sanitizedId}.json`);
-
-        if (!fs.existsSync(target)) {
-          res.writeHead(404, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ success: false, error: "Not found" }));
-          return;
-        }
-
-        const data = JSON.parse(fs.readFileSync(target, "utf-8"));
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ success: true, data }));
-        return;
-      }
-
-      if (req.method === "POST" && url.pathname === "/api/save") {
-        let body = "";
-        req.on("data", (chunk) => { body += chunk; });
-        req.on("end", () => {
-          const { config, overwrite } = JSON.parse(body);
-          const rawId = String(config.id || "").trim();
-
-          // Validar slug estricto
-          if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(rawId)) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ success: false, error: "ID inválido" }));
-            return;
-          }
-
-          // Validar Zod
-          const validation = ClientConfigSchema.safeParse(config);
-          if (!validation.success) {
-            res.writeHead(422, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ success: false, error: "Validación fallida" }));
-            return;
-          }
-
-          const targetPath = path.resolve(CLIENTS_DIR, `${validation.data.id}.json`);
-          if (!targetPath.startsWith(CLIENTS_DIR)) {
-            res.writeHead(403, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ success: false, error: "No autorizado" }));
-            return;
-          }
-
-          if (fs.existsSync(targetPath) && !overwrite) {
-            res.writeHead(409, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ success: false, exists: true }));
-            return;
-          }
-
-          fs.writeFileSync(targetPath, JSON.stringify(validation.data, null, 2), "utf-8");
-          res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ success: true, id: validation.data.id }));
+/** Petición HTTP con control total de cabeceras (incluida Host, que fetch no permite fijar). */
+function request(
+  method: string,
+  urlPath: string,
+  { headers = {}, body }: { headers?: Record<string, string>; body?: string | Buffer } = {}
+): Promise<Res> {
+  return new Promise((resolve, reject) => {
+    const req = http.request(
+      { host: "127.0.0.1", port, method, path: urlPath, headers: { Host: `127.0.0.1:${port}`, ...headers } },
+      (res) => {
+        const chunks: Buffer[] = [];
+        res.on("data", (c) => chunks.push(c));
+        res.on("end", () => {
+          const text = Buffer.concat(chunks).toString("utf8");
+          resolve({ status: res.statusCode || 0, headers: res.headers, body: text, json: () => JSON.parse(text) });
         });
-        return;
       }
+    );
+    req.on("error", (e: NodeJS.ErrnoException) => (e.code === "ECONNRESET" || e.code === "EPIPE" ? resolve({ status: 0, headers: {}, body: "", json: () => ({}) }) : reject(e)));
+    if (body !== undefined) req.write(body);
+    req.end();
+  });
+}
 
-      res.writeHead(404);
-      res.end();
-    });
+const auth = { "X-Generator-Token": TOKEN };
+const jsonHeaders = { ...auth, "Content-Type": "application/json" };
+const save = (payload: unknown, extra: Record<string, string> = {}) =>
+  request("POST", "/api/save", { headers: { ...jsonHeaders, ...extra }, body: JSON.stringify(payload) });
+const demo = (id: string) => JSON.parse(fs.readFileSync(path.join(REAL_CLIENTS, `${id}.json`), "utf8"));
 
-    await new Promise<void>((resolve) => server.listen(TEST_PORT, "127.0.0.1", () => resolve()));
+beforeAll(async () => {
+  tmp = fs.mkdtempSync(path.join(os.tmpdir(), "generador-"));
+  clientsDir = path.join(tmp, "clients");
+  backupsDir = path.join(tmp, "backups");
+  fs.mkdirSync(clientsDir);
+  for (const f of fs.readdirSync(REAL_CLIENTS)) {
+    fs.copyFileSync(path.join(REAL_CLIENTS, f), path.join(clientsDir, f));
+    realSnapshot.set(f, fs.readFileSync(path.join(REAL_CLIENTS, f), "utf8"));
+  }
+  ({ server } = createGeneratorServer({ clientsDir, backupsDir, token: TOKEN }));
+  await new Promise<void>((r) => server.listen(0, "127.0.0.1", () => r()));
+  port = (server.address() as AddressInfo).port;
+});
+
+afterAll(async () => {
+  await new Promise<void>((r) => server.close(() => r()));
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+describe("Generador: interfaz", () => {
+  it("sirve el editor con el token de sesión y cabeceras de seguridad", async () => {
+    const r = await request("GET", "/");
+    expect(r.status).toBe(200);
+    expect(r.body).toContain(`content="${TOKEN}"`);
+    expect(r.body).not.toContain("__GENERATOR_TOKEN__");
+    expect(r.headers["content-security-policy"]).toMatch(/frame-ancestors 'none'/);
+    expect(r.headers["x-frame-options"]).toBe("DENY");
+    expect(r.headers["x-content-type-options"]).toBe("nosniff");
+    expect(r.headers["cache-control"]).toBe("no-store");
   });
 
-  afterAll(async () => {
-    // Limpieza de archivo de prueba
-    const testFile = path.join(CLIENTS_DIR, `${TEST_CLIENT_ID}.json`);
-    if (fs.existsSync(testFile)) {
-      fs.unlinkSync(testFile);
+  it("sirve form-model.js y nada más (lista blanca)", async () => {
+    expect((await request("GET", "/form-model.js")).status).toBe(200);
+    for (const p of ["/server.mjs", "/../../package.json", "/%2e%2e/%2e%2e/package.json", "/clients/demo-artist.json", "/.env"]) {
+      expect((await request("GET", p)).status, p).toBe(404);
     }
-    await new Promise<void>((resolve) => server.close(() => resolve()));
   });
 
-  it("debe listar los clientes existentes en clients/", async () => {
-    const res = await fetch(`http://127.0.0.1:${TEST_PORT}/api/clients`);
-    const json = await res.json();
-    expect(res.status).toBe(200);
-    expect(json.success).toBe(true);
-    expect(json.clients).toContain("demo-professional");
-    expect(json.clients).toContain("demo-commerce");
-    expect(json.clients).toContain("demo-beauty");
-    expect(json.clients).toContain("demo-artist");
+  it("no envía cabeceras CORS en ninguna respuesta", async () => {
+    const responses = [await request("GET", "/"), await request("GET", "/api/clients", { headers: auth }), await request("OPTIONS", "/api/save")];
+    for (const r of responses) expect(r.headers["access-control-allow-origin"]).toBeUndefined();
+  });
+});
+
+describe("Generador: acceso solo local y autorizado", () => {
+  it("rechaza un Host distinto de localhost (DNS rebinding)", async () => {
+    const r = await request("GET", "/api/clients", { headers: { ...auth, Host: "evil.example:80" } });
+    expect(r.status).toBe(403);
+    expect((await request("GET", "/", { headers: { Host: `attacker.test:${port}` } })).status).toBe(403);
   });
 
-  it("debe rechazar IDs con caracteres prohibidos o intentos de path traversal", async () => {
-    const maliciousPayload = {
-      config: {
-        id: "../hack-escape",
-        businessName: "Malicious",
-      },
-      overwrite: false,
-    };
-
-    const res = await fetch(`http://127.0.0.1:${TEST_PORT}/api/save`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(maliciousPayload),
-    });
-
-    expect(res.status).toBe(400);
-    const json = await res.json();
-    expect(json.success).toBe(false);
+  it("acepta localhost y 127.0.0.1 con el puerto correcto", async () => {
+    expect((await request("GET", "/api/clients", { headers: { ...auth, Host: `localhost:${port}` } })).status).toBe(200);
+    expect((await request("GET", "/api/clients", { headers: { ...auth, Host: `127.0.0.1:${port}` } })).status).toBe(200);
   });
 
-  it("debe bloquear la sobreescritura si ya existe y overwrite=false", async () => {
-    const existingClientPayload = {
-      config: {
-        id: "demo-professional",
-        businessName: "Alva & Asociados Modificado",
-        tagline: "Lema",
-        variant: "professional",
-        colors: { primary: "#000000" },
-        hero: {
-          title: "Título suficientemente largo",
-          description: "Descripción suficientemente extensa para pasar Zod",
-          ctaPrimary: { text: "Ir", link: "#" },
-        },
-        about: { title: "Sobre", description: "Descripción extensa sobre la empresa" },
-        services: [{ id: "s1", title: "Servicio 1", description: "Descripción del servicio" }],
-        advantages: [{ title: "Ventaja 1", description: "Descripción de la ventaja" }],
-        contact: {},
-        seo: { title: "Título SEO largo", description: "Descripción SEO que cumple longitud" },
-      },
-      overwrite: false,
-    };
-
-    const res = await fetch(`http://127.0.0.1:${TEST_PORT}/api/save`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(existingClientPayload),
-    });
-
-    expect(res.status).toBe(409);
-    const json = await res.json();
-    expect(json.exists).toBe(true);
+  it("exige el token en toda la API", async () => {
+    expect((await request("GET", "/api/clients")).status).toBe(401);
+    expect((await request("GET", "/api/client/demo-artist")).status).toBe(401);
+    expect((await request("GET", "/api/clients", { headers: { "X-Generator-Token": "incorrecto" } })).status).toBe(401);
+    expect((await save({ config: demo("demo-artist"), overwrite: true }, { "X-Generator-Token": "x" })).status).toBe(401);
   });
 
-  it("debe permitir guardar un nuevo cliente válido", async () => {
-    const newClientPayload = {
-      config: {
-        id: TEST_CLIENT_ID,
-        businessName: "Negocio de Prueba Temporal",
-        tagline: "Servicios de prueba para el generador local",
-        variant: "professional",
-        colors: { primary: "#2563eb" },
-        hero: {
-          title: "Título para el hero de prueba del generador",
-          description: "Descripción de prueba para verificar que el generador escribe correctamente.",
-          ctaPrimary: { text: "Contactar", link: "#contacto" },
-        },
-        about: {
-          title: "Sobre nuestra prueba",
-          description: "Texto descriptivo que describe las operaciones de prueba.",
-        },
-        services: [
-          {
-            id: "servicio-test",
-            title: "Servicio de Diagnóstico",
-            description: "Descripción detallada del servicio de diagnóstico.",
-          },
-        ],
-        advantages: [
-          {
-            title: "Rapidez garantizada",
-            description: "Atención inmediata para todos los casos.",
-          },
-        ],
-        contact: {
-          whatsapp: "+51999111222",
-        },
-        seo: {
-          title: "Negocio de Prueba Temporal | Lima Perú",
-          description: "Página de prueba para verificar la creación de clientes desde el generador.",
-        },
-      },
-      overwrite: false,
-    };
+  it("rechaza peticiones con Origin ajeno o entre sitios aunque traigan token", async () => {
+    expect((await request("GET", "/api/clients", { headers: { ...auth, Origin: "https://evil.example" } })).status).toBe(403);
+    expect((await request("GET", "/api/clients", { headers: { ...auth, "Sec-Fetch-Site": "cross-site" } })).status).toBe(403);
+    expect((await request("GET", "/api/clients", { headers: { ...auth, Origin: `http://localhost:${port}` } })).status).toBe(200);
+  });
 
-    const res = await fetch(`http://127.0.0.1:${TEST_PORT}/api/save`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newClientPayload),
-    });
+  it("rechaza el preflight OPTIONS y métodos no permitidos", async () => {
+    expect((await request("OPTIONS", "/api/save", { headers: { Origin: "https://evil.example" } })).status).toBe(403);
+    expect((await request("OPTIONS", "/api/save")).status).toBe(401);
+    expect((await request("DELETE", "/api/client/demo-artist", { headers: auth })).status).toBe(405);
+    expect((await request("GET", "/api/save", { headers: auth })).status).toBe(405);
+    expect((await request("POST", "/", { headers: auth })).status).toBe(405);
+  });
+});
 
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.success).toBe(true);
+describe("Generador: lectura de clientes", () => {
+  it("lista los clientes", async () => {
+    const r = await request("GET", "/api/clients", { headers: auth });
+    expect(r.json().clients).toEqual(expect.arrayContaining(["demo-artist", "demo-beauty", "demo-commerce", "demo-professional"]));
+  });
 
-    // Verificar que el archivo realmente se escribió en disco
-    const writtenFilePath = path.join(CLIENTS_DIR, `${TEST_CLIENT_ID}.json`);
-    expect(fs.existsSync(writtenFilePath)).toBe(true);
+  it("devuelve un cliente existente", async () => {
+    const r = await request("GET", "/api/client/demo-artist", { headers: auth });
+    expect(r.status).toBe(200);
+    expect(r.json().data.id).toBe("demo-artist");
+  });
+
+  it.each(["..%2Fpackage", "%2e%2e%2f%2e%2e%2fpackage", "Demo-Artist", "demo_artist", "demo-artist.json", "..", "a%00b"])(
+    "rechaza ids inválidos o rutas fuera de clients/: %s",
+    async (id) => {
+      const r = await request("GET", `/api/client/${id}`, { headers: auth });
+      expect([400, 404]).toContain(r.status);
+      expect(r.status).not.toBe(200);
+    }
+  );
+
+  it("404 si el cliente no existe", async () => {
+    expect((await request("GET", "/api/client/no-existe", { headers: auth })).status).toBe(404);
+  });
+});
+
+describe("Generador: guardado", () => {
+  beforeEach(() => {
+    fs.rmSync(backupsDir, { recursive: true, force: true });
+  });
+
+  it("exige Content-Type JSON", async () => {
+    const r = await request("POST", "/api/save", { headers: { ...auth, "Content-Type": "text/plain" }, body: "{}" });
+    expect(r.status).toBe(415);
+  });
+
+  it("rechaza cuerpos de más de 1 MB", async () => {
+    const big = JSON.stringify({ config: { id: "x", padding: "a".repeat(1_100_000) } });
+    const r = await request("POST", "/api/save", { headers: jsonHeaders, body: big });
+    expect([413, 0]).toContain(r.status);
+    if (r.status) expect(r.json().success).toBe(false);
+  });
+
+  it("rechaza JSON mal formado y formatos inválidos", async () => {
+    expect((await request("POST", "/api/save", { headers: jsonHeaders, body: "{ no es json" })).status).toBe(400);
+    expect((await save([])).status).toBe(400);
+    expect((await save({ config: "texto" })).status).toBe(400);
+    expect((await save({ config: demo("demo-artist"), overwrite: "si" })).status).toBe(400);
+  });
+
+  it.each(["../hack-escape", "..\\hack", "clients/../x", "Mayusculas", "con espacios", "", "a/b"])(
+    "rechaza ids que intentan salir de clients/ o son inválidos: %j",
+    async (id) => {
+      const r = await save({ config: { ...demo("demo-artist"), id }, overwrite: true });
+      expect(r.status).toBe(400);
+      // Nada se escribió fuera de clients/ (en tmp solo existen las carpetas esperadas).
+      expect(fs.readdirSync(tmp).filter((f) => !["clients", "backups"].includes(f))).toEqual([]);
+    }
+  );
+
+  it("valida con Zod y devuelve detalles por campo", async () => {
+    const bad = { ...demo("demo-beauty"), id: "cliente-invalido", hero: { ...demo("demo-beauty").hero, title: "" } };
+    const r = await save({ config: bad });
+    expect(r.status).toBe(422);
+    expect(r.json().details.map((d: { field: string }) => d.field)).toContain("hero.title");
+    expect(fs.existsSync(path.join(clientsDir, "cliente-invalido.json"))).toBe(false);
+  });
+
+  it("no sobrescribe sin confirmación explícita", async () => {
+    const before = fs.readFileSync(path.join(clientsDir, "demo-beauty.json"), "utf8");
+    const r = await save({ config: { ...demo("demo-beauty"), tagline: "Cambiado sin permiso" } });
+    expect(r.status).toBe(409);
+    expect(fs.readFileSync(path.join(clientsDir, "demo-beauty.json"), "utf8")).toBe(before);
+  });
+
+  it("al sobrescribir guarda una copia de seguridad del archivo anterior", async () => {
+    const before = fs.readFileSync(path.join(clientsDir, "demo-commerce.json"), "utf8");
+    const r = await save({ config: { ...demo("demo-commerce"), tagline: "Nuevo lema de prueba" }, overwrite: true });
+    expect(r.status).toBe(200);
+    expect(r.json().backup).toMatch(/^demo-commerce\..+\.json$/);
+    expect(fs.readFileSync(path.join(backupsDir, r.json().backup), "utf8")).toBe(before);
+    expect(JSON.parse(fs.readFileSync(path.join(clientsDir, "demo-commerce.json"), "utf8")).tagline).toBe("Nuevo lema de prueba");
+    expect(fs.readdirSync(clientsDir).filter((f) => f.endsWith(".tmp"))).toEqual([]);
+  });
+
+  it("crea un cliente nuevo válido solo dentro de clients/", async () => {
+    const r = await save({ config: { ...demo("demo-professional"), id: "nuevo-cliente-prueba" } });
+    expect(r.status).toBe(200);
+    expect(fs.existsSync(path.join(clientsDir, "nuevo-cliente-prueba.json"))).toBe(true);
+    expect(fs.existsSync(path.join(REAL_CLIENTS, "nuevo-cliente-prueba.json"))).toBe(false);
+  });
+
+  it("guardar sin cambios conserva todos los campos del JSON (incluidos los que el editor no muestra)", async () => {
+    const original = demo("demo-beauty");
+    const r = await save({ config: original, overwrite: true });
+    expect(r.status).toBe(200);
+    const written = JSON.parse(fs.readFileSync(path.join(clientsDir, "demo-beauty.json"), "utf8"));
+    expect(written.contact.googleMapsUrl).toBe(original.contact.googleMapsUrl);
+    expect(written.colors).toEqual(original.colors);
+  });
+
+  it("no sigue enlaces simbólicos fuera de clients/", async () => {
+    const outside = path.join(tmp, "fuera.json");
+    fs.writeFileSync(outside, "{}");
+    const link = path.join(clientsDir, "enlace-externo.json");
+    try {
+      fs.symlinkSync(outside, link);
+    } catch {
+      return; // Windows sin permisos para crear enlaces: el caso no se puede montar aquí.
+    }
+    const r = await save({ config: { ...demo("demo-professional"), id: "enlace-externo" }, overwrite: true });
+    expect(r.status).toBe(403);
+    expect(fs.readFileSync(outside, "utf8")).toBe("{}");
+  });
+
+  it("los archivos reales de clients/ no se modificaron durante las pruebas", () => {
+    expect(fs.readdirSync(REAL_CLIENTS).sort()).toEqual([...realSnapshot.keys()].sort());
+    for (const [f, content] of realSnapshot) {
+      expect(fs.readFileSync(path.join(REAL_CLIENTS, f), "utf8"), f).toBe(content);
+    }
+    expect(fs.existsSync(path.join(REAL_CLIENTS, "nuevo-cliente-prueba.json"))).toBe(false);
   });
 });

@@ -45,3 +45,6 @@ next-env.d.ts
 
 # QA local (tools/qa)
 /.qa/
+
+# Copias de seguridad del editor local (tools/generator)
+/.generator-backups/

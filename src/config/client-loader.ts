@@ -1,42 +1,26 @@
 import fs from "node:fs";
 import path from "node:path";
 import { ClientConfigSchema, type ClientConfig } from "../schemas/client.schema";
-
-const DEFAULT_CLIENT_ID = "demo-professional";
+import { assertValidClientId, getClientsDir, resolveClientId } from "./client-id";
 
 /**
- * Retorna el ID del cliente configurado en las variables de entorno.
+ * Retorna el ID del cliente activo (variable CLIENT_ID).
+ * En builds de producción, Vercel o CI es obligatorio: si falta o no es válido, lanza un error.
  */
 export function getActiveClientId(): string {
-  const envId = process.env.CLIENT_ID || process.env.NEXT_PUBLIC_CLIENT_ID;
-  if (envId && envId.trim() !== "") {
-    return envId.trim();
-  }
-
-  return DEFAULT_CLIENT_ID;
+  return resolveClientId();
 }
 
 /**
  * Carga y valida estrictamente la configuración del cliente según su ID.
- * Lanza errores detallados si el archivo no existe o viola el esquema de validación.
+ * Lanza errores detallados si el ID no es válido, el archivo no existe, el JSON es inválido,
+ * viola el esquema o su campo "id" no coincide con el nombre del archivo.
  */
 export function loadClientConfig(clientId: string = getActiveClientId()): ClientConfig {
-  // Sanitizar el ID para prevenir path traversal
-  const sanitizedId = clientId.toLowerCase().replace(/[^a-z0-9-]/g, "");
-  if (!sanitizedId) {
-    throw new Error(`[client-loader] ID de cliente no válido: "${clientId}"`);
-  }
-
-  const clientsDir = path.resolve(process.cwd(), "clients");
+  // Validación estricta (sin "sanear"): un ID inválido es un error, nunca se transforma en otro.
+  const clientsDir = getClientsDir();
+  const sanitizedId = assertValidClientId(clientId, clientsDir);
   const filePath = path.join(clientsDir, `${sanitizedId}.json`);
-
-  if (!fs.existsSync(filePath)) {
-    throw new Error(
-      `[client-loader] No se encontró el archivo de configuración para el cliente "${sanitizedId}".\n` +
-        `Ruta esperada: ${filePath}\n` +
-        `Verifica que exista el archivo en la carpeta "clients/" o revisa la variable CLIENT_ID.`
-    );
-  }
 
   let fileContent: string;
   try {
@@ -63,6 +47,13 @@ export function loadClientConfig(clientId: string = getActiveClientId()): Client
       .join("\n");
     throw new Error(
       `[client-loader] La configuración del cliente "${sanitizedId}" no cumple el esquema requerido:\n${errorDetails}`
+    );
+  }
+
+  if (result.data.id !== sanitizedId) {
+    throw new Error(
+      `[client-loader] El archivo "${sanitizedId}.json" declara "id": "${result.data.id}". ` +
+        `El campo "id" debe coincidir con el nombre del archivo.`
     );
   }
 
