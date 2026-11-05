@@ -84,7 +84,7 @@ export function Navbar({ config, tone = "light" }: NavbarProps) {
               rel="noopener noreferrer"
               style={isArtist ? { backgroundColor: config.colors.primary, color: readableTextColor(config.colors.primary) } : undefined}
               className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                !isArtist ? "bg-emerald-600 hover:bg-emerald-700" : ""
+                !isArtist ? "bg-emerald-700 hover:bg-emerald-800" : ""
               }`}
             >
               <MessageCircle className="h-4 w-4" aria-hidden="true" />
@@ -135,7 +135,7 @@ export function Navbar({ config, tone = "light" }: NavbarProps) {
                   href={waLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 py-3 text-base font-semibold text-white shadow-sm hover:bg-emerald-700"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-700 py-3 text-base font-semibold text-white shadow-sm hover:bg-emerald-800"
                 >
                   <MessageCircle className="h-5 w-5" aria-hidden="true" />
                   <span>{ctaButtonText}</span>

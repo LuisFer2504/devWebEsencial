@@ -232,16 +232,16 @@ export function CommerceTheme({ config }: CommerceThemeProps) {
               </div>
 
               {waMainLink && (
-                <div className="rounded-2xl bg-orange-500 p-8 text-white shadow-xl">
+                <div className="rounded-2xl bg-orange-700 p-8 text-white shadow-xl">
                   <h3 className="text-2xl font-black mb-3">¿Tienes una consulta o pedido?</h3>
-                  <p className="text-sm text-orange-100 mb-6 leading-relaxed">
+                  <p className="text-sm text-orange-50 mb-6 leading-relaxed">
                     Escríbenos directamente para coordinar tu atención inmediata o consultar disponibilidad de productos.
                   </p>
                   <a
                     href={waMainLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-extrabold text-orange-700 shadow-md transition-colors hover:bg-orange-50"
+                    className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-extrabold text-orange-800 shadow-md transition-colors hover:bg-orange-50"
                   >
                     <MessageCircle className="h-5 w-5" />
                     <span>Consultar por WhatsApp</span>
@@ -269,7 +269,7 @@ export function CommerceTheme({ config }: CommerceThemeProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {advantages.map((adv, idx) => (
                 <div key={idx} className="rounded-2xl bg-white p-6 border border-stone-200 shadow-sm">
-                  <div className="h-10 w-10 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 font-extrabold text-sm mb-4">
+                  <div className="h-10 w-10 rounded-xl bg-orange-100 flex items-center justify-center text-orange-800 font-extrabold text-sm mb-4">
                     0{idx + 1}
                   </div>
                   <h3 className="text-base font-bold text-stone-900 mb-2">{adv.title}</h3>
@@ -307,7 +307,7 @@ export function CommerceTheme({ config }: CommerceThemeProps) {
               href={waMainLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-[2] flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 py-3 text-sm font-bold text-white shadow-sm"
+              className="flex-[2] flex items-center justify-center gap-1.5 rounded-lg bg-emerald-700 py-3 text-sm font-bold text-white shadow-sm"
             >
               <MessageCircle className="h-4 w-4" aria-hidden="true" />
               <span>Pedir por WhatsApp</span>
