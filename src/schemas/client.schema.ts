@@ -159,6 +159,63 @@ export const ContactInfoSchema = z.object({
 });
 export type ContactInfo = z.infer<typeof ContactInfoSchema>;
 
+// --- Enlaces e imágenes seguros (rechaza javascript:, data:, etc.) ---
+const SafeUrlSchema = z
+  .string()
+  .url("URL inválida")
+  .refine((v) => /^https?:\/\//i.test(v), "La URL debe empezar por https:// o http://");
+const ImageSourceSchema = z
+  .string()
+  .min(2, "Ruta de imagen requerida")
+  .refine((v) => /^https:\/\//i.test(v) || /^\/[^/]/.test(v), "La imagen debe ser una URL https:// o una ruta que empiece por /");
+
+// Catálogo de tarjetas (otras páginas, plantillas o proyectos). Solo se muestra si tiene elementos.
+export const ShowcaseItemSchema = z.object({
+  title: z.string().min(2, "El título de la tarjeta es requerido"),
+  description: z.string().min(5, "La descripción de la tarjeta es requerida"),
+  image: ImageSourceSchema.optional(),
+  imageAlt: z.string().optional(),
+  // Opcional: sin URL la tarjeta se muestra sin enlace (p. ej. demo aún no publicada).
+  url: SafeUrlSchema.optional(),
+  linkLabel: z.string().optional(),
+  tags: z.array(z.string().min(1)).max(6, "Máximo 6 etiquetas por tarjeta").optional(),
+});
+export type ShowcaseItem = z.infer<typeof ShowcaseItemSchema>;
+
+export const ShowcaseSchema = z.object({
+  navLabel: z.string().optional(),
+  subtitle: z.string().optional(),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  pendingLinkText: z.string().optional(),
+  items: z.array(ShowcaseItemSchema).min(1, "El catálogo necesita al menos una tarjeta"),
+});
+export type Showcase = z.infer<typeof ShowcaseSchema>;
+
+// Aviso de demostración: identifica el sitio como demo y, si existe WhatsApp, rotula los mensajes.
+export const DemoBannerSchema = z.object({
+  message: z.string().min(10, "El mensaje del aviso de demostración es requerido"),
+  templateName: z.string().min(2, "Indica la plantilla que muestra la demo"),
+  linkText: z.string().optional(),
+  url: SafeUrlSchema.optional(),
+});
+export type DemoBanner = z.infer<typeof DemoBannerSchema>;
+
+// Preguntas frecuentes.
+export const FaqItemSchema = z.object({
+  question: z.string().min(5, "La pregunta es requerida"),
+  answer: z.string().min(10, "La respuesta es requerida"),
+});
+export type FaqItem = z.infer<typeof FaqItemSchema>;
+
+export const FaqSchema = z.object({
+  navLabel: z.string().optional(),
+  subtitle: z.string().optional(),
+  title: z.string().optional(),
+  items: z.array(FaqItemSchema).min(1, "Las preguntas frecuentes necesitan al menos una pregunta"),
+});
+export type Faq = z.infer<typeof FaqSchema>;
+
 export const SeoConfigSchema = z.object({
   title: z.string().min(5, "El título SEO debe tener al menos 5 caracteres"),
   description: z.string().min(15, "La descripción SEO debe tener al menos 15 caracteres"),
@@ -210,6 +267,10 @@ export const ClientConfigSchema = z.object({
   services: z.array(ServiceItemSchema).default([]),
   advantages: z.array(AdvantageItemSchema).default([]),
   trustBadges: z.array(TrustBadgeSchema).optional(),
+  // Secciones opcionales (hoy las renderiza la variante professional) y aviso de demo (todas las variantes).
+  showcase: ShowcaseSchema.optional(),
+  faq: FaqSchema.optional(),
+  demoBanner: DemoBannerSchema.optional(),
   // Secciones específicas de Artistas (opcionales)
   artistProfile: ArtistProfileSchema.optional(),
   gallery: z.array(GalleryItemSchema).optional(),

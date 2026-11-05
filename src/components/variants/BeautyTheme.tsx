@@ -3,7 +3,8 @@ import { Navbar } from "@/components/shared/Navbar";
 import { ContactSection } from "@/components/shared/ContactSection";
 import { WhatsAppFloatingButton } from "@/components/shared/WhatsAppFloatingButton";
 import { Footer } from "@/components/shared/Footer";
-import { buildWhatsAppLink } from "@/utils/whatsapp";
+import { buildWhatsAppLink, itemWhatsAppMessage, resolveCtaHref } from "@/utils/whatsapp";
+import { contactFallbackHref } from "@/utils/navigation";
 import { readableTextColor } from "@/utils/color";
 import {
   Sparkles,
@@ -59,7 +60,7 @@ export function BeautyTheme({ config }: BeautyThemeProps) {
 
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <a
-                href={waBookingLink || hero.ctaPrimary.link}
+                href={waBookingLink || resolveCtaHref(hero.ctaPrimary.link, config) || "#inicio"}
                 target={waBookingLink ? "_blank" : undefined}
                 rel={waBookingLink ? "noopener noreferrer" : undefined}
                 style={{ backgroundColor: colors.primary, color: readableTextColor(colors.primary) }}
@@ -69,9 +70,9 @@ export function BeautyTheme({ config }: BeautyThemeProps) {
                 <span>{hero.ctaPrimary.text}</span>
               </a>
 
-              {hero.ctaSecondary && (
+              {hero.ctaSecondary && resolveCtaHref(hero.ctaSecondary.link, config) && (
                 <a
-                  href={hero.ctaSecondary.link}
+                  href={resolveCtaHref(hero.ctaSecondary.link, config) ?? undefined}
                   className="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-rose-200 bg-white px-8 py-4 text-sm font-medium text-rose-900 shadow-sm hover:bg-rose-50/50"
                 >
                   {hero.ctaSecondary.text}
@@ -117,8 +118,9 @@ export function BeautyTheme({ config }: BeautyThemeProps) {
               {services.map((service) => {
                 const waTreatmentLink = buildWhatsAppLink(
                   contact.whatsapp,
-                  `Hola ${config.businessName}, deseo reservar una cita para: "${service.title}".`
+                  itemWhatsAppMessage(config, `Hola ${config.businessName}, deseo reservar una cita para: "${service.title}".`, service.title)
                 );
+                const treatmentHref = waTreatmentLink || contactFallbackHref(config);
 
                 return (
                   <div
@@ -156,16 +158,19 @@ export function BeautyTheme({ config }: BeautyThemeProps) {
                       </div>
                     </div>
 
+                    {treatmentHref && (
                     <div className="shrink-0">
                       <a
-                        href={waTreatmentLink || "#contacto"}
+                        href={treatmentHref}
                         target={waTreatmentLink ? "_blank" : undefined}
                         rel={waTreatmentLink ? "noopener noreferrer" : undefined}
                         className="inline-flex items-center justify-center rounded-full border border-pink-300 bg-pink-50/50 px-6 py-2.5 text-xs font-semibold text-pink-800 transition-colors hover:bg-pink-600 hover:text-white"
                       >
                         Reservar Cita
+                        <span className="sr-only">: {service.title}</span>
                       </a>
                     </div>
+                    )}
                   </div>
                 );
               })}

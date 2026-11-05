@@ -4,7 +4,10 @@ import { Navbar } from "@/components/shared/Navbar";
 import { ContactSection } from "@/components/shared/ContactSection";
 import { WhatsAppFloatingButton } from "@/components/shared/WhatsAppFloatingButton";
 import { Footer } from "@/components/shared/Footer";
-import { buildWhatsAppLink } from "@/utils/whatsapp";
+import { Showcase } from "@/components/shared/Showcase";
+import { Faq } from "@/components/shared/Faq";
+import { buildWhatsAppLink, itemWhatsAppMessage, resolveCtaHref } from "@/utils/whatsapp";
+import { contactFallbackHref, showsFaq, showsShowcase } from "@/utils/navigation";
 import { readableTextColor } from "@/utils/color";
 import {
   CheckCircle2,
@@ -36,6 +39,11 @@ export function ProfessionalTheme({ config }: ProfessionalThemeProps) {
   // Si los destacados ya están en el hero, "Nosotros" no los repite.
   const showAboutHighlights = highlights.length > 0 && !highlightsInHero;
   const highlightsTitle = sectionTitles?.aboutTitle || "Aspectos Destacados";
+
+  // CTAs del hero: el valor "whatsapp" se resuelve al chat (o se omite si aún no hay número).
+  const primaryHref = resolveCtaHref(hero.ctaPrimary.link, config);
+  const secondaryHref = hero.ctaSecondary ? resolveCtaHref(hero.ctaSecondary.link, config) : null;
+  const fallbackHref = contactFallbackHref(config);
 
   // La imagen de portada es el elemento más grande de la primera pantalla (LCP): se descarga cuanto antes.
   if (hero.heroImage) preload(hero.heroImage, { as: "image", fetchPriority: "high" });
@@ -73,18 +81,22 @@ export function ProfessionalTheme({ config }: ProfessionalThemeProps) {
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+                {primaryHref && (
                 <a
-                  href={hero.ctaPrimary.link}
+                  href={primaryHref}
+                  {...(primaryHref.startsWith("https://wa.me/") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                   style={{ backgroundColor: colors.primary, color: readableTextColor(colors.primary) }}
                   className="inline-flex items-center justify-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold text-white shadow-md transition-all hover:brightness-110 focus:outline-none focus:ring-4 focus:ring-blue-200"
                 >
                   <span>{hero.ctaPrimary.text}</span>
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </a>
+                )}
 
-                {hero.ctaSecondary && (
+                {hero.ctaSecondary && secondaryHref && (
                   <a
-                    href={hero.ctaSecondary.link}
+                    href={secondaryHref}
+                    {...(secondaryHref.startsWith("https://wa.me/") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                     className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-7 py-3.5 text-base font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-950 focus:outline-none focus:ring-4 focus:ring-slate-100"
                   >
                     {hero.ctaSecondary.text}
@@ -165,6 +177,9 @@ export function ProfessionalTheme({ config }: ProfessionalThemeProps) {
         </section>
       )}
 
+      {/* Catálogo opcional (showcase) */}
+      {showsShowcase(config) && <Showcase showcase={config.showcase} />}
+
       {/* Servicios (Condicional y Personalizable) */}
       {showServices && (
         <section id="servicios" className="scroll-mt-20 py-24 bg-white border-t border-slate-200">
@@ -187,8 +202,9 @@ export function ProfessionalTheme({ config }: ProfessionalThemeProps) {
               {services.map((service) => {
                 const waConsultLink = buildWhatsAppLink(
                   contact.whatsapp,
-                  `Hola ${config.businessName}, me interesa consultar sobre "${service.title}".`
+                  itemWhatsAppMessage(config, `Hola ${config.businessName}, me interesa consultar sobre "${service.title}".`, service.title)
                 );
+                const consultHref = waConsultLink || fallbackHref;
 
                 return (
                   <div
@@ -216,15 +232,18 @@ export function ProfessionalTheme({ config }: ProfessionalThemeProps) {
                         <span className="text-xs font-medium text-slate-600">Consultar</span>
                       )}
 
+                      {consultHref && (
                       <a
-                        href={waConsultLink || "#contacto"}
+                        href={consultHref}
                         target={waConsultLink ? "_blank" : undefined}
                         rel={waConsultLink ? "noopener noreferrer" : undefined}
                         className="inline-flex items-center gap-1 text-sm font-semibold text-blue-700 hover:text-blue-900 focus:outline-none focus:underline"
                       >
                         <span>Consultar</span>
+                        <span className="sr-only">: {service.title}</span>
                         <ArrowRight className="h-4 w-4" aria-hidden="true" />
                       </a>
+                      )}
                     </div>
                   </div>
                 );
@@ -274,6 +293,9 @@ export function ProfessionalTheme({ config }: ProfessionalThemeProps) {
           </div>
         </section>
       )}
+
+      {/* Preguntas frecuentes opcionales */}
+      {showsFaq(config) && <Faq faq={config.faq} />}
 
         <ContactSection config={config} />
       </main>

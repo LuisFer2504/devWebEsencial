@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { loadClientConfig } from "@/config/client-loader";
+import { DemoBanner } from "@/components/shared/DemoBanner";
 import "./globals.css";
 
 export function generateMetadata(): Metadata {
@@ -42,6 +43,7 @@ export default function RootLayout({
         }} />
       </head>
       <body className="bg-white text-slate-800 antialiased">
+        <DemoBanner banner={config.demoBanner} />
         {children}
       </body>
     </html>

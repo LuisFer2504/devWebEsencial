@@ -3,7 +3,8 @@ import { Navbar } from "@/components/shared/Navbar";
 import { ContactSection } from "@/components/shared/ContactSection";
 import { WhatsAppFloatingButton } from "@/components/shared/WhatsAppFloatingButton";
 import { Footer } from "@/components/shared/Footer";
-import { buildWhatsAppLink } from "@/utils/whatsapp";
+import { buildWhatsAppLink, itemWhatsAppMessage, resolveCtaHref } from "@/utils/whatsapp";
+import { contactFallbackHref } from "@/utils/navigation";
 import { readableTextColor } from "@/utils/color";
 import {
   ShoppingBag,
@@ -84,7 +85,7 @@ export function CommerceTheme({ config }: CommerceThemeProps) {
 
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
               <a
-                href={waMainLink || hero.ctaPrimary.link}
+                href={waMainLink || resolveCtaHref(hero.ctaPrimary.link, config) || "#inicio"}
                 target={waMainLink ? "_blank" : undefined}
                 rel={waMainLink ? "noopener noreferrer" : undefined}
                 style={{ backgroundColor: colors.primary, color: readableTextColor(colors.primary) }}
@@ -94,9 +95,9 @@ export function CommerceTheme({ config }: CommerceThemeProps) {
                 <span>{hero.ctaPrimary.text}</span>
               </a>
 
-              {hero.ctaSecondary && (
+              {hero.ctaSecondary && resolveCtaHref(hero.ctaSecondary.link, config) && (
                 <a
-                  href={hero.ctaSecondary.link}
+                  href={resolveCtaHref(hero.ctaSecondary.link, config) ?? undefined}
                   className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl border-2 border-stone-300 bg-white px-8 py-4 text-base font-bold text-stone-800 transition-colors hover:bg-stone-100"
                 >
                   {hero.ctaSecondary.text}
@@ -147,8 +148,9 @@ export function CommerceTheme({ config }: CommerceThemeProps) {
               {services.map((service) => {
                 const waProductLink = buildWhatsAppLink(
                   contact.whatsapp,
-                  `Hola ${config.businessName}, deseo consultar sobre: "${service.title}".`
+                  itemWhatsAppMessage(config, `Hola ${config.businessName}, deseo consultar sobre: "${service.title}".`, service.title)
                 );
+                const productHref = waProductLink || contactFallbackHref(config);
 
                 return (
                   <div
@@ -185,15 +187,18 @@ export function CommerceTheme({ config }: CommerceThemeProps) {
                         )}
                       </div>
 
+                      {productHref && (
                       <a
-                        href={waProductLink || "#contacto"}
+                        href={productHref}
                         target={waProductLink ? "_blank" : undefined}
                         rel={waProductLink ? "noopener noreferrer" : undefined}
                         className="w-full flex items-center justify-center gap-2 rounded-lg bg-orange-700 px-3.5 py-2.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-orange-800"
                       >
-                        <MessageCircle className="h-4 w-4" />
-                        <span>Pedir por WhatsApp</span>
+                        <MessageCircle className="h-4 w-4" aria-hidden="true" />
+                        <span>{waProductLink ? "Pedir por WhatsApp" : "Consultar"}</span>
+                        <span className="sr-only">: {service.title}</span>
                       </a>
+                      )}
                     </div>
                   </div>
                 );
