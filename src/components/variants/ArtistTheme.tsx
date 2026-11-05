@@ -1,10 +1,14 @@
+import { preload } from "react-dom";
 import type { ClientConfig } from "@/types/client";
 import { Navbar } from "@/components/shared/Navbar";
 import { ContactSection } from "@/components/shared/ContactSection";
 import { WhatsAppFloatingButton } from "@/components/shared/WhatsAppFloatingButton";
 import { Footer } from "@/components/shared/Footer";
 import { buildWhatsAppLink } from "@/utils/whatsapp";
-import { getEmbedVideoUrl } from "@/utils/media";
+import { readableTextColor } from "@/utils/color";
+import { getEmbedVideoUrl, getVideoThumbnailUrl } from "@/utils/media";
+import { getEventDateParts } from "@/utils/dates";
+import { VideoEmbed } from "@/components/shared/VideoEmbed";
 import {
   Music,
   Calendar,
@@ -55,10 +59,15 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
   const showGallery = sectionVisibility?.gallery !== false && Boolean(gallery && gallery.length > 0);
   const showEvents = sectionVisibility?.events !== false && Boolean(events && events.filter((e) => e.visible !== false).length > 0);
   const showPackages = sectionVisibility?.packages !== false && Boolean(packages && packages.filter((p) => p.visible !== false).length > 0);
+  const portrait = artistProfile?.portraitImage || about.aboutImage;
+
+  // La imagen de portada es el elemento más grande de la primera pantalla (LCP): se descarga cuanto antes.
+  if (hero.heroImage) preload(hero.heroImage, { as: "image", fetchPriority: "high" });
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 antialiased selection:bg-amber-500 selection:text-black">
-      <Navbar config={config} />
+      <Navbar config={config} tone="dark" />
+      <main>
 
       {/* Portada del Artista (Hero Escénico Inmersivo) */}
       <section
@@ -71,11 +80,12 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={hero.heroImage}
-              alt={stageName}
-              className="h-full w-full object-cover object-center opacity-30 blur-xs scale-105"
+              alt=""
+              fetchPriority="high"
+              className="h-full w-full object-cover object-center opacity-30 blur-sm scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent" />
-            <div className="absolute inset-0 bg-radial-at-c from-transparent via-zinc-950/60 to-zinc-950" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(9,9,11,0.6)_60%,#09090b_100%)]" />
           </div>
         ) : (
           <div className="absolute inset-0 z-0 opacity-20 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:24px_24px]" />
@@ -84,7 +94,7 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
         <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center">
           {/* Badge o Género Musical */}
           {(genre || hero.badge) && (
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-amber-400 mb-6 backdrop-blur-xs">
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-amber-400 mb-6 backdrop-blur-sm">
               <Music className="h-3.5 w-3.5" />
               <span>{genre || hero.badge}</span>
             </div>
@@ -105,11 +115,11 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
             {hero.description}
           </p>
 
-          {/* Zona de contratación */}
+          {/* Zona de contratación (texto libre del cliente, se muestra tal cual) */}
           {bookingZone && (
-            <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-zinc-400">
-              <MapPin className="h-3.5 w-3.5 text-amber-400" />
-              <span>Disponible para contrataciones en {bookingZone}</span>
+            <p className="mt-3 inline-flex items-center gap-1.5 text-sm text-zinc-300">
+              <MapPin className="h-4 w-4 shrink-0 text-amber-400" aria-hidden="true" />
+              <span>{bookingZone}</span>
             </p>
           )}
 
@@ -119,7 +129,7 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
               href={waBookingLink || hero.ctaPrimary.link}
               target={waBookingLink ? "_blank" : undefined}
               rel={waBookingLink ? "noopener noreferrer" : undefined}
-              style={{ backgroundColor: colors.primary || "#d97706" }}
+              style={{ backgroundColor: colors.primary || "#d97706", color: readableTextColor(colors.primary || "#d97706") }}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-full px-8 py-4 text-sm font-bold uppercase tracking-wider text-white shadow-lg transition-all hover:brightness-110 active:scale-95"
             >
               <span>{hero.ctaPrimary.text || "Contratar en Vivo"}</span>
@@ -129,7 +139,7 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
             {hero.ctaSecondary && (
               <a
                 href={hero.ctaSecondary.link}
-                className="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-zinc-700 bg-zinc-900/80 px-8 py-4 text-sm font-semibold text-zinc-200 backdrop-blur-xs transition-colors hover:bg-zinc-800 hover:text-white"
+                className="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-zinc-700 bg-zinc-900/80 px-8 py-4 text-sm font-semibold text-zinc-200 backdrop-blur-sm transition-colors hover:bg-zinc-800 hover:text-white"
               >
                 {hero.ctaSecondary.text}
               </a>
@@ -142,16 +152,17 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
       {showAbout && (
         <section id="biografia" className="scroll-mt-20 py-24 bg-zinc-900/60 border-b border-zinc-800/80">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className={`grid grid-cols-1 ${artistProfile?.portraitImage || about.aboutImage ? "lg:grid-cols-12 gap-12" : "max-w-3xl mx-auto text-center"} items-center`}>
+            <div className={`grid grid-cols-1 ${portrait ? "lg:grid-cols-12 gap-12" : "max-w-3xl mx-auto text-center"} items-center`}>
               
               {/* Fotografía de retrato del artista si existe */}
-              {(artistProfile?.portraitImage || about.aboutImage) && (
+              {portrait && (
                 <div className="lg:col-span-5">
-                  <div className="relative rounded-2xl overflow-hidden border border-zinc-700/60 shadow-2xl shadow-black/80 aspect-4/5">
+                  <div className="relative mx-auto max-w-sm lg:max-w-none rounded-2xl overflow-hidden border border-zinc-700/60 bg-zinc-900 shadow-2xl shadow-black/80 aspect-[4/5]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={artistProfile?.portraitImage || about.aboutImage}
-                      alt={stageName}
+                      src={portrait}
+                      alt={`Retrato de ${stageName}`}
+                      loading="lazy"
                       className="h-full w-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent" />
@@ -160,7 +171,7 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
               )}
 
               {/* Texto de Biografía */}
-              <div className={artistProfile?.portraitImage || about.aboutImage ? "lg:col-span-7" : "w-full"}>
+              <div className={portrait ? "lg:col-span-7" : "w-full"}>
                 <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
                   {sectionTitles?.aboutSubtitle || "Trayectoria & Pasión"}
                 </span>
@@ -223,16 +234,7 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
                     className="rounded-2xl border border-zinc-800 bg-zinc-900/70 overflow-hidden shadow-lg transition-transform hover:border-amber-500/50"
                   >
                     {embedUrl ? (
-                      <div className="aspect-video w-full bg-black">
-                        <iframe
-                          src={embedUrl}
-                          title={vid.title}
-                          className="w-full h-full border-0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          loading="lazy"
-                        />
-                      </div>
+                      <VideoEmbed embedUrl={embedUrl} thumbnailUrl={getVideoThumbnailUrl(vid.url)} title={vid.title} />
                     ) : (
                       <div className="aspect-video w-full bg-zinc-900 flex flex-col items-center justify-center p-6 text-center">
                         <Play className="h-10 w-10 text-amber-400 mb-2" />
@@ -279,7 +281,7 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
               {gallery?.map((img) => (
                 <div
                   key={img.id}
-                  className="group relative rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900 aspect-4/3 shadow-md"
+                  className="group relative rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900 aspect-[4/3] shadow-md"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -289,7 +291,7 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                   {img.caption && (
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
                       <p className="text-xs text-zinc-200">{img.caption}</p>
                     </div>
                   )}
@@ -321,25 +323,33 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
             <div className="space-y-4">
               {events
                 ?.filter((ev) => ev.visible !== false)
-                .map((ev) => (
+                .map((ev) => {
+                  const when = getEventDateParts(ev.date);
+                  return (
                   <div
                     key={ev.id}
                     className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors hover:border-zinc-700"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="flex flex-col items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 h-16 w-16 shrink-0">
-                        <Calendar className="h-5 w-5 mb-0.5" />
-                        <span className="text-[10px] font-bold uppercase">{ev.date.split("-")[1] || "FECHA"}</span>
+                      <div className="flex flex-col items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 h-16 w-16 shrink-0" aria-hidden="true">
+                        {when.month ? (
+                          <>
+                            <span className="text-[11px] font-bold uppercase tracking-wider">{when.month}</span>
+                            {when.day && <span className="text-2xl font-black leading-none text-white">{when.day}</span>}
+                          </>
+                        ) : (
+                          <Calendar className="h-6 w-6" />
+                        )}
                       </div>
                       <div>
                         <h3 className="text-lg font-bold text-white">{ev.title}</h3>
-                        <p className="text-xs text-zinc-400 mt-1 flex items-center gap-2">
+                        <p className="text-xs text-zinc-300 mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
                           <span>{ev.date}</span>
                           {ev.time && <span>• {ev.time}</span>}
                           <span>• {ev.venue}, {ev.city}</span>
                         </p>
                         {ev.description && (
-                          <p className="text-xs text-zinc-500 mt-2">{ev.description}</p>
+                          <p className="text-xs text-zinc-400 mt-2">{ev.description}</p>
                         )}
                       </div>
                     </div>
@@ -358,6 +368,8 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
                       ) : (
                         <a
                           href={waBookingLink || "#contacto"}
+                          target={waBookingLink ? "_blank" : undefined}
+                          rel={waBookingLink ? "noopener noreferrer" : undefined}
                           className="inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-xs font-semibold text-zinc-200 hover:bg-zinc-700"
                         >
                           <span>Consultar</span>
@@ -365,7 +377,8 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
                       )}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
             </div>
           </div>
         </section>
@@ -411,7 +424,7 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
                           {pkg.price ? (
                             <div className="flex items-baseline gap-1">
                               <span className="text-2xl font-black text-amber-400">{pkg.price}</span>
-                              {pkg.currency && <span className="text-xs text-zinc-500 font-medium">{pkg.currency}</span>}
+                              {pkg.currency && <span className="text-xs text-zinc-400 font-medium">{pkg.currency}</span>}
                             </div>
                           ) : (
                             <span className="text-xs font-medium text-amber-400/90 uppercase tracking-wider">
@@ -421,7 +434,7 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
 
                           {pkg.duration && (
                             <p className="text-xs text-zinc-400 mt-1 flex items-center gap-1.5">
-                              <Clock className="h-3.5 w-3.5 text-zinc-500" />
+                              <Clock className="h-3.5 w-3.5 text-zinc-400" aria-hidden="true" />
                               <span>Duración: {pkg.duration}</span>
                             </p>
                           )}
@@ -456,11 +469,12 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
         </section>
       )}
 
-      {/* Contacto y Redes */}
-      <ContactSection config={config} />
+        {/* Contacto y Redes */}
+        <ContactSection config={config} />
+      </main>
 
       {/* Pie de Página */}
-      <Footer config={config} />
+      <Footer config={config} tone="dark" />
 
       {/* Botón flotante accesible */}
       <WhatsAppFloatingButton contact={contact} />
