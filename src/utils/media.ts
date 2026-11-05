@@ -27,3 +27,13 @@ export function getEmbedVideoUrl(rawUrl?: string): string | null {
 
   return null;
 }
+
+/**
+ * Miniatura estática (sin cookies) para mostrar antes de cargar el reproductor.
+ * Solo YouTube tiene una URL de miniatura predecible; para otras plataformas devuelve null.
+ */
+export function getVideoThumbnailUrl(rawUrl?: string): string | null {
+  const embed = getEmbedVideoUrl(rawUrl);
+  const yt = embed?.match(/youtube-nocookie\.com\/embed\/([\w-]{11})/);
+  return yt ? `https://i.ytimg.com/vi/${yt[1]}/hqdefault.jpg` : null;
+}
