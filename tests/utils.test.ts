@@ -86,7 +86,7 @@ describe("Navegación", () => {
     const pro = loadClientConfig("demo-professional");
     expect(getNavLinks(pro).map((l) => l.href)).toEqual(["#inicio", "#nosotros", "#servicios", "#ventajas", "#contacto"]);
     const artist = loadClientConfig("demo-artist");
-    expect(getNavLinks(artist).map((l) => l.href)).toEqual(["#inicio", "#biografia", "#musica", "#galeria", "#fechas", "#paquetes", "#contacto"]);
+    expect(getNavLinks(artist).map((l) => l.href)).toEqual(["#inicio", "#biografia", "#galeria", "#fechas", "#paquetes", "#contacto"]);
   });
 
   it("omite secciones ocultas o vacías", () => {

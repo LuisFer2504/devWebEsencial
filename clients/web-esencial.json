@@ -1,0 +1,166 @@
+{
+  "id": "web-esencial",
+  "businessName": "Web Esencial",
+  "tagline": "Páginas web para pequeños negocios, profesionales y artistas",
+  "variant": "professional",
+  "colors": {
+    "primary": "#0f766e",
+    "primaryHover": "#115e59"
+  },
+  "hero": {
+    "badge": "Páginas web profesionales para tu negocio",
+    "title": "Tu negocio merece una página web clara y lista para recibir clientes",
+    "description": "Creamos una página adaptada a tu rubro, con tu información, tus imágenes, tus colores y un botón directo a WhatsApp. Eliges una plantilla, nos envías tus datos y nosotros nos encargamos del resto.",
+    "ctaPrimary": {
+      "text": "Solicitar cotización",
+      "link": "whatsapp"
+    },
+    "ctaSecondary": {
+      "text": "Ver plantillas",
+      "link": "#plantillas"
+    },
+    "heroImage": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=70&w=900&auto=format&fit=crop"
+  },
+  "about": {
+    "title": "Una página web hecha para tu negocio, sin complicaciones",
+    "description": "Muchos negocios dependen solo de redes sociales y pierden clientes que buscan información clara: qué ofreces, cuánto cuesta, dónde estás y cómo contactarte. Web Esencial crea páginas web de una sola página, rápidas y fáciles de usar desde el celular, para que tus clientes encuentren todo en un solo lugar y te escriban directamente.",
+    "highlights": [
+      "1. Eliges la plantilla que mejor encaja con tu negocio",
+      "2. Compartes la información, imágenes y colores de tu marca",
+      "3. Personalizamos la página con tu contenido",
+      "4. Revisas una vista previa y nos pides ajustes",
+      "5. Aprobamos juntos y publicamos tu página"
+    ]
+  },
+  "services": [
+    {
+      "id": "pagina-web-personalizada",
+      "title": "Página web personalizada",
+      "description": "Página de una sola sección continua con la plantilla que elijas, tus textos, servicios o productos, imágenes, colores y botones de contacto por WhatsApp.",
+      "badge": "Servicio principal"
+    },
+    {
+      "id": "dominio-propio",
+      "title": "Conexión de dominio propio",
+      "description": "Te ayudamos a conectar la dirección web de tu negocio (por ejemplo, tunegocio.com) a tu página publicada."
+    },
+    {
+      "id": "cambios-y-mantenimiento",
+      "title": "Cambios y mantenimiento",
+      "description": "Actualizamos precios, horarios, servicios o fotos cuando tu negocio lo necesite, revisando cada cambio antes de publicarlo."
+    }
+  ],
+  "advantages": [
+    {
+      "title": "Adaptada a tu negocio",
+      "description": "Tu información, tus servicios y tus colores en una plantilla pensada para tu rubro."
+    },
+    {
+      "title": "Se ve bien en el celular",
+      "description": "Diseño responsive: la página se adapta a celulares, tablets y computadoras."
+    },
+    {
+      "title": "Botón directo a WhatsApp",
+      "description": "Tus clientes te escriben con un toque, con un mensaje que indica qué les interesa."
+    },
+    {
+      "title": "Información organizada",
+      "description": "Servicios, precios, horarios y ubicación ordenados para que nadie tenga que preguntar lo básico."
+    },
+    {
+      "title": "Publicada en internet",
+      "description": "Publicamos tu página para que puedas compartir su enlace y, si quieres, usar tu propio dominio."
+    }
+  ],
+  "showcase": {
+    "navLabel": "Plantillas",
+    "subtitle": "Catálogo de plantillas",
+    "title": "Elige el estilo de tu página",
+    "description": "Cuatro plantillas pensadas para distintos rubros. Cada una se personaliza con tus textos, imágenes y colores.",
+    "pendingLinkText": "Demostración en preparación",
+    "items": [
+      {
+        "title": "Professional",
+        "description": "Para estudios contables, consultorías, abogados, clínicas y servicios profesionales que necesitan transmitir confianza.",
+        "image": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=70&w=640&auto=format&fit=crop",
+        "imageAlt": "Persona firmando documentos sobre un escritorio",
+        "tags": ["Consultorías", "Estudios", "Servicios"]
+      },
+      {
+        "title": "Commerce",
+        "description": "Para ferreterías, tiendas y talleres que venden por WhatsApp: catálogo de productos y botón de pedido en cada uno.",
+        "image": "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?q=70&w=640&auto=format&fit=crop",
+        "imageAlt": "Martillo sobre una mesa de madera",
+        "tags": ["Tiendas", "Ferreterías", "Talleres"]
+      },
+      {
+        "title": "Beauty",
+        "description": "Para spas, salones de belleza y centros de estética: carta de tratamientos con duración, precio y reserva de citas.",
+        "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=70&w=640&auto=format&fit=crop",
+        "imageAlt": "Toalla, crema y flores en un spa",
+        "tags": ["Spas", "Salones", "Estética"]
+      },
+      {
+        "title": "Artist",
+        "description": "Para músicos, bandas y artistas: biografía, galería, próximas fechas y paquetes de contratación para eventos.",
+        "image": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=70&w=640&auto=format&fit=crop",
+        "imageAlt": "Micrófono de escenario con luces de fondo",
+        "tags": ["Músicos", "Bandas", "Eventos"]
+      }
+    ]
+  },
+  "faq": {
+    "navLabel": "Preguntas",
+    "items": [
+      {
+        "question": "¿Necesito conocimientos técnicos?",
+        "answer": "No. Tú nos compartes la información de tu negocio y nosotros preparamos, revisamos y publicamos la página."
+      },
+      {
+        "question": "¿Qué información debo enviar?",
+        "answer": "El nombre de tu negocio, una descripción breve, tus servicios o productos (con precios si quieres mostrarlos), horarios, datos de contacto, tu logo, fotos y los colores de tu marca."
+      },
+      {
+        "question": "¿Cuánto cuesta?",
+        "answer": "Depende de la plantilla y de lo que necesites. Escríbenos y te enviamos una cotización sin compromiso."
+      },
+      {
+        "question": "¿Cuánto tiempo toma?",
+        "answer": "El plazo depende de que tengamos toda la información de tu negocio. Te lo confirmamos al enviarte la cotización."
+      },
+      {
+        "question": "¿Puedo usar mi propio dominio?",
+        "answer": "Sí. Si ya tienes un dominio, te ayudamos a conectarlo; si no, te orientamos para registrar uno a nombre de tu negocio."
+      },
+      {
+        "question": "¿Puedo pedir cambios después de publicar?",
+        "answer": "Sí. Puedes pedirnos cambios de textos, precios, horarios o fotos; revisamos cada cambio contigo antes de publicarlo."
+      }
+    ]
+  },
+  "sectionTitles": {
+    "aboutSubtitle": "Qué es Web Esencial",
+    "aboutTitle": "Cómo trabajamos",
+    "servicesSubtitle": "Qué ofrecemos",
+    "servicesTitle": "Servicios",
+    "servicesDescription": "Los precios dependen de la plantilla y de lo que necesites: te enviamos una cotización sin compromiso.",
+    "advantagesSubtitle": "Beneficios",
+    "advantagesTitle": "Todo lo que tu negocio necesita para estar en internet",
+    "contactSubtitle": "Cotización sin compromiso",
+    "contactTitle": "Solicita tu página web",
+    "contactDescription": "Cuéntanos sobre tu negocio y te enviamos una propuesta."
+  },
+  "contact": {
+    "whatsappDefaultMessage": "Hola Web Esencial, quiero cotizar una página web para mi negocio."
+  },
+  "seo": {
+    "title": "Web Esencial | Páginas web para pequeños negocios",
+    "description": "Creamos páginas web para pequeños negocios, profesionales y artistas: elige una plantilla, envíanos tus datos y publicamos tu página con botón de WhatsApp.",
+    "keywords": [
+      "pagina web para negocios",
+      "pagina web pequeños negocios peru",
+      "diseño web con whatsapp",
+      "plantillas de pagina web"
+    ]
+  }
+}

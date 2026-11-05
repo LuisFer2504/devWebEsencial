@@ -1,7 +1,7 @@
 {
   "id": "demo-artist",
-  "businessName": "Tyler Kealey",
-  "tagline": "Pianista, cantautor y espectáculo musical en vivo",
+  "businessName": "Elio Marén",
+  "tagline": "Piano y voz en vivo para eventos",
   "variant": "artist",
   "colors": {
     "primary": "#d97706",
@@ -10,91 +10,75 @@
     "neutralBg": "#09090b"
   },
   "hero": {
-    "badge": "Piano & Voz en Vivo • Dueling Pianos",
-    "title": "Música en vivo que transforma cada evento en una experiencia inolvidable",
-    "description": "Repertorio versátil que combina clásicos del rock, pop, blues y composiciones originales. Disponible para bodas, festivales, conciertos y eventos corporativos exclusivos.",
+    "badge": "Piano y voz en vivo",
+    "title": "Música en vivo que acompaña los momentos importantes",
+    "description": "Artista de ejemplo para mostrar la plantilla Artist: biografía, galería, próximas fechas y paquetes de contratación para bodas, eventos y celebraciones.",
     "ctaPrimary": {
-      "text": "Cotizar Presentación en Vivo",
-      "link": "#contacto"
+      "text": "Ver paquetes",
+      "link": "#paquetes"
     },
     "ctaSecondary": {
-      "text": "Ver Videos en Escena",
-      "link": "#musica"
+      "text": "Ver galería",
+      "link": "#galeria"
     },
     "heroImage": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1200&auto=format&fit=crop"
   },
   "artistProfile": {
-    "stageName": "Tyler Kealey",
-    "genre": "Singer-Songwriter • Piano Rock & Blues",
-    "bookingZone": "Presentaciones nacionales e internacionales",
-    "bio": "Tyler Kealey es un cantante, compositor y pianista canadiense reconocido por su energía desbordante en escena y su capacidad para conectar con el público a través de historias cantadas con pasión.\n\nCon más de 15 años de trayectoria en giras, festivales y escenarios emblemáticos, destaca tanto en recitales íntimos como en el aclamado formato de Dueling Pianos, donde la espontaneidad y la interacción musical son los protagonistas.",
-    "quote": "La música en vivo no se trata solo de notas, sino de los momentos inolvidables que creamos juntos frente al escenario.",
+    "stageName": "Elio Marén",
+    "genre": "Pop, rock y baladas en piano",
+    "bookingZone": "Presentaciones en Lima y provincias",
+    "bio": "Elio Marén es un artista de ejemplo creado para mostrar la plantilla Artist. Así podría presentarse un pianista y cantante que adapta su repertorio a cada evento: desde música tranquila para una cena hasta un show para que todos canten.\n\nLa página reúne su propuesta, fotos de escenario, próximas fechas y formatos de contratación en un solo lugar.",
+    "quote": "Cada evento merece una banda sonora propia.",
     "portraitImage": "https://images.unsplash.com/photo-1516280440614-37939bbacd81?q=80&w=800&auto=format&fit=crop",
     "achievements": [
-      "Más de 1,200 presentaciones en vivo entre festivales, clubes y eventos privados",
-      "Álbumes originales con rotación en emisoras independientes y plataformas de streaming",
-      "Presentaciones internacionales en formato solista y dueling pianos"
+      "Repertorio adaptable a cada tipo de evento",
+      "Formatos solista, dúo y banda",
+      "Equipo de sonido propio"
     ]
   },
   "about": {
-    "title": "Pasión musical al servicio de tu evento",
-    "description": "Cada presentación está diseñada para adaptarse al ambiente de tu celebración: desde melodías sofisticadas para cócteles y cenas, hasta espectáculos vibrantes donde todo el público canta y baila."
+    "title": "Música en vivo a la medida de tu evento",
+    "description": "Cada presentación se adapta al ambiente de la celebración: melodías tranquilas para cócteles y cenas, o un show animado para la pista de baile."
   },
-  "videos": [
-    {
-      "id": "vid-1",
-      "title": "Presentación en Vivo — Sesión Acústica de Piano",
-      "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      "description": "Interpretación en directo con arreglos propios para piano y voz.",
-      "platform": "youtube"
-    },
-    {
-      "id": "vid-2",
-      "title": "Show Dueling Pianos — Grandes Éxitos y Energía en Escena",
-      "url": "https://www.youtube.com/watch?v=kJQP7kiw5Fk",
-      "description": "Dinamismo, interacción con la audiencia y clásicos del rock y pop.",
-      "platform": "youtube"
-    }
-  ],
   "gallery": [
     {
       "id": "img-1",
       "url": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=800&auto=format&fit=crop",
-      "alt": "Concierto en vivo con iluminación escénica",
-      "caption": "Festival en vivo — Escenario Principal"
+      "alt": "Público frente a un escenario iluminado",
+      "caption": "Concierto en vivo"
     },
     {
       "id": "img-2",
-      "url": "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?q=80&w=800&auto=format&fit=crop",
-      "alt": "Manos sobre las teclas del piano en concierto",
-      "caption": "Momento acústico al piano"
+      "url": "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?q=80&w=800&auto=format&fit=crop",
+      "alt": "Escenario preparado con piano, batería y micrófono",
+      "caption": "Escenario listo para la presentación"
     },
     {
       "id": "img-3",
       "url": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop",
-      "alt": "Ambiente de fiesta y concierto",
-      "caption": "Interacción con el público en evento corporativo"
+      "alt": "Consola de sonido con luces de colores",
+      "caption": "Ambiente de fiesta"
     }
   ],
   "events": [
     {
       "id": "ev-1",
-      "title": "Recital Acústico de Primavera",
-      "date": "14 Noviembre 2026",
+      "title": "Noche acústica de piano",
+      "date": "20 Marzo 2027",
       "time": "8:30 PM",
-      "venue": "Teatro Central",
+      "venue": "Sala de ejemplo",
       "city": "Lima",
-      "description": "Noche íntima de canciones originales y reinterpretaciones de clásicos.",
+      "description": "Fecha de ejemplo para mostrar el calendario de presentaciones.",
       "visible": true
     },
     {
       "id": "ev-2",
-      "title": "Show Especial Dueling Pianos",
-      "date": "28 Noviembre 2026",
+      "title": "Clásicos al piano",
+      "date": "17 Abril 2027",
       "time": "9:00 PM",
-      "venue": "Club House Lounge",
-      "city": "Miraflores",
-      "description": "Dos pianos, peticiones de canciones en vivo y pura diversión.",
+      "venue": "Auditorio de ejemplo",
+      "city": "Lima",
+      "description": "Las fechas pasadas se ocultan automáticamente al publicar.",
       "visible": true
     }
   ],
@@ -102,7 +86,7 @@
     {
       "id": "pkg-acustico",
       "title": "Piano & Voz Solista",
-      "description": "Ideal para cócteles, ceremonias de boda, recepciones y cenas privadas con un ambiente cálido y sofisticado.",
+      "description": "Piano y voz para cócteles, ceremonias, recepciones y cenas privadas.",
       "price": "$800",
       "currency": "USD",
       "duration": "2 horas",
@@ -118,7 +102,7 @@
     {
       "id": "pkg-dueling",
       "title": "Espectáculo Dueling Pianos",
-      "description": "Dos pianistas en escena compitiendo amistosamente, complaciendo pedidos del público e incendiando la pista de baile.",
+      "description": "Dos pianistas en escena, canciones a pedido y participación del público.",
       "price": "Cotización según evento",
       "duration": "3 horas",
       "features": [
@@ -133,7 +117,7 @@
     {
       "id": "pkg-banda",
       "title": "Banda Completa para Fiestas",
-      "description": "Piano, bajo, batería y guitarra para llevar la energía al máximo nivel en bodas y celebraciones masivas.",
+      "description": "Piano, bajo, batería y guitarra para celebraciones con pista de baile.",
       "price": "Cotización según requerimientos",
       "duration": "4 horas",
       "features": [
@@ -147,26 +131,20 @@
     }
   ],
   "contact": {
-    "whatsapp": "+51987654321",
-    "whatsappDefaultMessage": "Hola Tyler Kealey, quisiera consultar disponibilidad para contratar una presentación musical en la siguiente fecha:",
-    "email": "booking@tylerkealey.com",
-    "phone": "+51 987 654 321",
-    "city": "Disponible para eventos en Perú e Internacional",
-    "socialLinks": {
-      "spotify": "https://open.spotify.com",
-      "youtube": "https://www.youtube.com",
-      "instagram": "https://www.instagram.com",
-      "facebook": "https://www.facebook.com"
-    }
+    "whatsappDefaultMessage": "Hola Web Esencial, estoy viendo la demo de la plantilla Artist y quiero una página como esta para mi negocio.",
+    "city": "Lima, Perú"
   },
   "seo": {
-    "title": "Tyler Kealey | Músico, Pianista y Cantautor en Vivo",
-    "description": "Contrata a Tyler Kealey para bodas, eventos corporativos y festivales. Shows solistas de piano y el vibrante formato de Dueling Pianos.",
+    "title": "Elio Marén | Demo de la plantilla Artist",
+    "description": "Demostración de Web Esencial: página para un artista musical de ejemplo con biografía, galería, fechas y paquetes de contratación.",
     "keywords": [
-      "musica en vivo bodas",
-      "pianista eventos corporativos",
-      "dueling pianos show",
-      "cantautor en vivo"
+      "plantilla web musico",
+      "pagina web artista",
+      "demo web esencial"
     ]
+  },
+  "demoBanner": {
+    "message": "Estás viendo una demostración de Web Esencial. Podemos crear una página como esta para tu negocio.",
+    "templateName": "Artist"
   }
 }
