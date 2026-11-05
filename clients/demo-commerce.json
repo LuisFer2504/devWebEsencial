@@ -77,6 +77,28 @@
       "description": "Envíanos tu lista escrita o en foto y te respondemos con tu presupuesto detallado en minutos."
     }
   ],
+  "trustBadges": [
+    {
+      "title": "Envíos en el día",
+      "description": "A toda Lima Este",
+      "icon": "truck"
+    },
+    {
+      "title": "Yape, Plin y tarjetas",
+      "description": "Paga como prefieras",
+      "icon": "card"
+    },
+    {
+      "title": "Marcas garantizadas",
+      "description": "Productos originales",
+      "icon": "shield"
+    },
+    {
+      "title": "Respuesta rápida",
+      "description": "Cotiza por WhatsApp",
+      "icon": "clock"
+    }
+  ],
   "contact": {
     "whatsapp": "+51912345678",
     "whatsappDefaultMessage": "Hola Ferretería El Maestro, quisiera cotizar la siguiente lista de materiales:",
