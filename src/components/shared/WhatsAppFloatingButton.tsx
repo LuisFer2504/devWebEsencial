@@ -4,9 +4,14 @@ import { MessageCircle } from "lucide-react";
 
 interface WhatsAppFloatingButtonProps {
   contact: ContactInfo;
+  /**
+   * Oculta el botón en pantallas pequeñas. Úsalo cuando la variante ya muestra una barra fija de
+   * contacto en móvil (evita que el botón flotante tape los botones de esa barra).
+   */
+  hideOnMobile?: boolean;
 }
 
-export function WhatsAppFloatingButton({ contact }: WhatsAppFloatingButtonProps) {
+export function WhatsAppFloatingButton({ contact, hideOnMobile = false }: WhatsAppFloatingButtonProps) {
   const waLink = buildWhatsAppLink(contact.whatsapp, contact.whatsappDefaultMessage);
 
   if (!waLink) {
@@ -14,7 +19,10 @@ export function WhatsAppFloatingButton({ contact }: WhatsAppFloatingButtonProps)
   }
 
   return (
-    <aside aria-label="Contacto rápido por WhatsApp" className="fixed bottom-6 right-6 z-50">
+    <aside
+      aria-label="Contacto rápido por WhatsApp"
+      className={`fixed bottom-6 right-6 z-50 ${hideOnMobile ? "hidden sm:block" : ""}`}
+    >
       <a
         href={waLink}
         target="_blank"
@@ -24,7 +32,7 @@ export function WhatsAppFloatingButton({ contact }: WhatsAppFloatingButtonProps)
       >
         <span className="sr-only">Contactar por WhatsApp</span>
         <MessageCircle className="h-7 w-7" aria-hidden="true" />
-        
+
         {/* Tooltip accesible visual */}
         <span className="pointer-events-none absolute right-16 hidden rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white shadow-md transition-opacity group-hover:block whitespace-nowrap">
           ¿En qué podemos ayudarte?
