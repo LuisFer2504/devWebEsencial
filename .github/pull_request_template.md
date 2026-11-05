@@ -63,6 +63,11 @@ Base obligatoria: produccion. Solo el propietario revisa y fusiona.
 - [ ] `npm run lint`
 - [ ] `CLIENT_ID=<id> npm run build` para cada cliente/variante afectada: <!-- ids -->
 - [ ] Revisado el diff: sin secretos, sin artefactos generados (`out/`, `.next/`, `*.tsbuildinfo`)
+- [ ] **Verificación MCP** (obligatoria si el PR toca código; ver `.claude/skills/web-esencial/references/MCP_VERIFICATION.md`)
+
+<!-- Verificación MCP: clientes y viewports revisados, resultado de page-audit, Lighthouse
+     (Accesibilidad / Buenas prácticas / SEO), LCP y CLS, prueba del editor si aplica, problemas encontrados.
+     Si el PR es solo de documentación: "No aplica". -->
 
 ## Cómo probarlo
 
