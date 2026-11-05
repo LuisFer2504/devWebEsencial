@@ -169,3 +169,24 @@ describe("escapeHtml", () => {
     expect(FormModel.escapeHtml(undefined)).toBe("");
   });
 });
+
+describe("Editor: mensajes de validación de listas", () => {
+  it("un campo obligatorio vacío se envía como texto vacío para que Zod use el mensaje en español", () => {
+    const original = readClient("demo-professional.json");
+    const r = roundTrip(original, (_form, base) => {
+      base.services.push(FormModel.mergeListItem({ id: "nuevo" }, { title: "Servicio sin descripción", description: "" }, "services"));
+    });
+    expect(r.services.at(-1).description).toBe("");
+    const v = ClientConfigSchema.safeParse(r);
+    expect(v.success).toBe(false);
+    if (!v.success) {
+      const issue = v.error.issues.find((i) => i.path.join(".") === `services.${r.services.length - 1}.description`);
+      expect(issue?.message).toBe("La descripción del servicio debe tener al menos 5 caracteres");
+    }
+  });
+
+  it("los opcionales vaciados sí se eliminan", () => {
+    const item = FormModel.mergeListItem({ id: "x", title: "T", description: "Descripción", price: "S/ 10" }, { price: "" }, "services");
+    expect("price" in item).toBe(false);
+  });
+});

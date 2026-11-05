@@ -62,18 +62,22 @@
    * Listas de objetos editables. `fields`: campo del modelo → clase CSS del input.
    * `content`: campos que, si están todos vacíos, indican un elemento "en blanco" (se descarta al guardar).
    * `lines`: campos que son arrays editados como texto, un elemento por línea.
+   * `required`: campos obligatorios en el esquema: si se vacían se envían como "" (no se eliminan) para que
+   *   la validación muestre su mensaje en español en lugar de "expected string, received undefined".
    * `idPrefix`: prefijo para generar un id si el elemento no lo tiene.
    */
   const LISTS = {
     services: {
       fields: { id: "srv-id", title: "srv-title", description: "srv-desc", price: "srv-price", duration: "srv-duration", badge: "srv-badge" },
       content: ["title", "description", "price", "duration", "badge"],
+      required: ["title", "description"],
       idPrefix: "servicio",
       lowercaseId: true,
     },
     packages: {
       fields: { id: "pkg-id", title: "pkg-title", description: "pkg-desc", price: "pkg-price", currency: "pkg-curr", duration: "pkg-dur", features: "pkg-feat" },
       content: ["title", "description", "price", "currency", "duration"],
+      required: ["title", "description"],
       lines: ["features"],
       idPrefix: "paquete",
       lowercaseId: true,
@@ -81,21 +85,25 @@
     videos: {
       fields: { title: "vid-title", url: "vid-url", description: "vid-desc" },
       content: ["title", "url", "description"],
+      required: ["title", "url"],
       idPrefix: "vid",
     },
     gallery: {
       fields: { url: "gal-url", alt: "gal-alt", caption: "gal-cap" },
       content: ["url", "caption"],
+      required: ["url", "alt"],
       idPrefix: "img",
     },
     events: {
       fields: { title: "ev-title", date: "ev-date", venue: "ev-venue", city: "ev-city", time: "ev-time", ticketUrl: "ev-ticket" },
       content: ["title", "date", "venue", "city", "time", "ticketUrl"],
+      required: ["title", "date", "venue", "city"],
       idPrefix: "ev",
     },
     advantages: {
       fields: { title: "adv-title", description: "adv-desc" },
       content: ["title", "description"],
+      required: ["title", "description"],
     },
   };
 
@@ -128,6 +136,10 @@
       let v = clean(values[field]);
       if (field === "id" && v !== undefined && spec.lowercaseId) v = v.toLowerCase();
       if (field === "id" && v === undefined && previous && previous.id !== undefined) continue; // no perder un id
+      if (v === undefined && spec.required && spec.required.includes(field)) {
+        item[field] = "";
+        continue;
+      }
       setOrDelete(item, field, v);
     }
     return item;
