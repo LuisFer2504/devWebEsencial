@@ -94,5 +94,5 @@ ni dominios configurados en el repo. **Nunca despliegues ni publiques sin pedido
 
 ## Estado
 
-Línea base versionada en `produccion` (commit `9cc3d71`). Problemas conocidos y prioridades:
-`.claude/skills/web-esencial/references/ROADMAP.md`.
+Plan de lanzamiento comercial, diagnóstico vigente y roadmap por fases: `docs/COMMERCIAL_LAUNCH_PLAN.md`
+(prevalece sobre el roadmap técnico anterior de `.claude/skills/web-esencial/references/ROADMAP.md`).
