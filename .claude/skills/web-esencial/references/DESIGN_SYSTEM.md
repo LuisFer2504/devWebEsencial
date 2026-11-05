@@ -27,6 +27,10 @@
 | `beauty` | rosa/pink, tipografía `font-light` | Centrado, highlights (máx. 3) bajo los CTA | Carta de servicios (lista con duración y precio) → Nosotros → Ventajas → Contacto | CTA "Reservar Cita" por servicio |
 | `artist` | zinc-950 oscuro + ámbar | Pantalla casi completa, `heroImage` de fondo, H1 = `stageName` | Biografía (+ retrato, hitos) → Videos → Galería → Fechas → Paquetes → Contacto | Embeds YouTube/Vimeo |
 
+Componentes opcionales (Fase 2): `DemoBanner` (todas, `aside` slate-900 sobre la Navbar, solo con
+`demoBanner`), `Showcase` y `Faq` (solo Professional, solo con `showcase`/`faq`; mismo encabezado de
+sección, tarjetas `rounded-2xl`, `<details>` nativo para el FAQ). Sin configurar no renderizan nada.
+
 Comunes a todas: `Navbar` (blanca), `ContactSection` (slate-900 con acentos emerald/indigo/amber),
 `Footer` (blanco), `WhatsAppFloatingButton` (emerald, abajo a la derecha).
 

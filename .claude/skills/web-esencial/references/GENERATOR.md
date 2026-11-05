@@ -57,7 +57,7 @@ web abiertas en el mismo navegador; no frente a malware que ya controle el equip
 `buildConfig(base, form, drafts)` parte del JSON cargado y solo modifica los campos que el formulario
 muestra:
 - campos sin control en el editor (`colors.accent`, `neutralBg`, `contact.googleMapsUrl`, `seo.ogImage`,
-  `trustBadges`, los títulos no editables, `about.aboutImage`, `artistProfile.bio/stageName/bioShort`…) se
+  `trustBadges`, `showcase`, `faq`, `demoBanner`, los títulos no editables, `about.aboutImage`, `artistProfile.bio/stageName/bioShort`…) se
   conservan tal cual;
 - cada elemento de lista conserva todos sus campos (`id`, `icon`, `visible`, `platform`, `ctaText`,
   `ctaLink`, `description` de eventos, `isFeatured`…);

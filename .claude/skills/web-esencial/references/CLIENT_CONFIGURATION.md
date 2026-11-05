@@ -28,6 +28,7 @@ Contrato: `src/schemas/client.schema.ts` (`ClientConfigSchema`). Cargado por
 | `hero.description` | ≥ 10 | sí | Párrafo del hero |
 | `hero.ctaPrimary.{text,link}` | ≥ 2 / ≥ 1 | sí | En commerce/beauty/artist, si hay WhatsApp, **el link se reemplaza** por WhatsApp |
 | `hero.ctaSecondary` | `{text,link}` | no | Botón secundario |
+| `hero.cta*.link = "whatsapp"` | valor especial | — | Se convierte en el chat de WhatsApp con `contact.whatsappDefaultMessage`. **Sin `contact.whatsapp` el botón no se muestra** (nunca genera un enlace roto) |
 | `hero.heroImage` | string | no | Professional (panel lateral), Artist (fondo). Commerce/Beauty lo ignoran |
 | `about.title` | ≥ 2 | sí | H2 de "nosotros"; Professional lo usa también en el panel lateral |
 | `about.description` | ≥ 10 | sí | Texto (artist: `artistProfile.bio` tiene prioridad) |
@@ -38,8 +39,11 @@ Contrato: `src/schemas/client.schema.ts` (`ClientConfigSchema`). Cargado por
 | `artistProfile` | `{stageName?, genre?, bookingZone?, bio?, bioShort?, portraitImage?, quote?, achievements?}` | no | Solo Artist. `bioShort` sin uso |
 | `gallery[]` | `{id, url≥3, alt≥2, caption?, isFeatured?}` | no | Solo Artist. `isFeatured` sin uso |
 | `videos[]` | `{id, title≥2, url≥5, description?, platform(default youtube)}` | no | Solo Artist. `platform` sin uso (se detecta por URL) |
-| `events[]` | `{id, title, date≥3 (texto libre), time?, venue, city, description?, ticketUrl?, visible(default true)}` | no | Solo Artist |
+| `events[]` | `{id, title, date≥3 (texto libre), time?, venue, city, description?, ticketUrl?, visible(default true)}` | no | Solo Artist. Si `date` incluye año (`2027-03-20`, `20/03/2027`, `20 Marzo 2027`) y ya pasó **al compilar**, el evento se oculta; sin año se muestra siempre |
 | `packages[]` | `{id, title, description, price?, currency?, duration?, features?, ctaText?, ctaLink?, visible(default true)}` | no | Solo Artist. `ctaLink` solo si no hay WhatsApp |
+| `showcase` | `{navLabel?, subtitle?, title?, description?, pendingLinkText?, items[≥1]: {title, description, image?, imageAlt?, url?, linkLabel?, tags?(≤6)}}` | no | Solo Professional: catálogo de tarjetas (`#plantillas`) antes de Servicios. `url` solo `http(s)://`; sin `url` se muestra `pendingLinkText` (nunca un enlace vacío). `image`: `https://` o ruta `/…` |
+| `faq` | `{navLabel?, subtitle?, title?, items[≥1]: {question, answer}}` | no | Solo Professional: preguntas frecuentes (`#preguntas`) antes de Contacto |
+| `demoBanner` | `{message, templateName, linkText?, url?}` | no | Todas las variantes: aviso superior "Estás viendo una demostración…". Además, **activa el modo demo**: los mensajes de WhatsApp por servicio/paquete/evento usan `whatsappDefaultMessage` (o "…demo de la plantilla <templateName>…") + el elemento consultado, en vez de dirigirse al negocio ficticio. Solo para los `demo-*` |
 | `sectionTitles` | 22 claves opcionales `<seccion>{Subtitle,Title,Description}` | no | Ver abajo |
 | `sectionVisibility` | `{about, services, advantages, contact, schedule, gallery, videos, events, packages}` booleanos, default `true` | no | Todas las variantes |
 | `contact` | ver abajo | sí (objeto, puede ser `{}`) | ContactSection, Navbar, botones |
@@ -67,6 +71,19 @@ Professional usa `about*`, `services*`, `advantages*`; ojo: `aboutTitle` titula 
 highlights**, no la sección (el H2 viene de `about.title`). Commerce y Beauty: `aboutSubtitle`,
 `services*`, `advantages{Subtitle,Title}`. Artist: `aboutSubtitle`, `videos*`, `gallery{Subtitle,Title}`,
 `events*`, `packages*`. ContactSection: `contact*` (todas). `galleryDescription` no se usa.
+
+### Demos y página comercial (Fase 2)
+
+- `clients/demo-*.json` son negocios **ficticios** (Horizonte Contable, Ferretería Martillo Azul, Brisa Serena
+  Spa, Elio Marén): sin teléfonos, correos, direcciones, redes ni videos de terceros, con `demoBanner`.
+- `clients/web-esencial.json` es la página comercial (Professional + `showcase` + `faq`).
+- **WhatsApp comercial pendiente**: cuando el propietario defina el número, añadir
+  `"whatsapp": "+51 9XX XXX XXX"` dentro de `contact` en los 4 demos y en `web-esencial.json` (mismo
+  número; `tests/demos-showcase.test.tsx` lo exige). No hace falta tocar componentes: aparecen solos el
+  CTA "Solicitar cotización", el botón flotante y los botones por servicio/paquete.
+- **URLs de demos pendientes**: añadir `url` a cada `showcase.items[]` cuando estén publicadas.
+- Si no hay WhatsApp ni teléfono/correo visibles, los botones por elemento ("Consultar", "Reservar", paquetes)
+  **no se muestran** (antes apuntaban a `#contacto` aunque no hubiera forma de contactar).
 
 ## Defaults de visibilidad efectivos
 
