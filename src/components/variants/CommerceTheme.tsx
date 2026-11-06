@@ -4,7 +4,7 @@ import { ContactSection } from "@/components/shared/ContactSection";
 import { WhatsAppFloatingButton } from "@/components/shared/WhatsAppFloatingButton";
 import { Footer } from "@/components/shared/Footer";
 import { buildWhatsAppLink, itemWhatsAppMessage, resolveCtaHref } from "@/utils/whatsapp";
-import { contactFallbackHref } from "@/utils/navigation";
+import { contactFallbackHref, getNavbarData, getNavLinks } from "@/utils/navigation";
 import { readableTextColor } from "@/utils/color";
 import {
   ShoppingBag,
@@ -59,9 +59,12 @@ export function CommerceTheme({ config }: CommerceThemeProps) {
   // Barra fija de conversión en móvil: solo si hay algún canal que mostrar.
   const showMobileBar = Boolean(contact.phone || waMainLink);
 
+  // Calculados en el servidor y compartidos por Navbar y Footer (la Navbar no recalcula nada al hidratar).
+  const navLinks = getNavLinks(config);
+
   return (
     <div className={`min-h-screen bg-stone-50 text-stone-900 antialiased ${showMobileBar ? "pb-16 sm:pb-0" : ""}`}>
-      <Navbar config={config} />
+      <Navbar data={getNavbarData(config, navLinks)} />
       <main>
 
       {/* Hero Comercial Centrado */}
@@ -288,7 +291,7 @@ export function CommerceTheme({ config }: CommerceThemeProps) {
 
         <ContactSection config={config} />
       </main>
-      <Footer config={config} />
+      <Footer config={config} links={navLinks} />
       {/* En móvil la barra fija ya ofrece WhatsApp: el botón flotante solo se muestra en pantallas grandes */}
       <WhatsAppFloatingButton contact={contact} hideOnMobile={showMobileBar} />
 

@@ -4,7 +4,7 @@ import { ContactSection } from "@/components/shared/ContactSection";
 import { WhatsAppFloatingButton } from "@/components/shared/WhatsAppFloatingButton";
 import { Footer } from "@/components/shared/Footer";
 import { buildWhatsAppLink, itemWhatsAppMessage, resolveCtaHref } from "@/utils/whatsapp";
-import { contactFallbackHref } from "@/utils/navigation";
+import { contactFallbackHref, getNavbarData, getNavLinks } from "@/utils/navigation";
 import { readableTextColor } from "@/utils/color";
 import {
   Sparkles,
@@ -31,9 +31,12 @@ export function BeautyTheme({ config }: BeautyThemeProps) {
   const showServices = sectionVisibility?.services !== false && services && services.length > 0;
   const showAdvantages = sectionVisibility?.advantages !== false && advantages && advantages.length > 0;
 
+  // Calculados en el servidor y compartidos por Navbar y Footer (la Navbar no recalcula nada al hidratar).
+  const navLinks = getNavLinks(config);
+
   return (
     <div className="min-h-screen bg-rose-50/30 text-rose-950 antialiased selection:bg-pink-100 selection:text-pink-900">
-      <Navbar config={config} />
+      <Navbar data={getNavbarData(config, navLinks)} />
       <main>
 
       {/* Hero Editorial & Sensorial */}
@@ -239,7 +242,7 @@ export function BeautyTheme({ config }: BeautyThemeProps) {
 
         <ContactSection config={config} />
       </main>
-      <Footer config={config} />
+      <Footer config={config} links={navLinks} />
       <WhatsAppFloatingButton contact={contact} />
     </div>
   );

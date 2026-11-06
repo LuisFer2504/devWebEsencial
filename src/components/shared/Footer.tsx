@@ -1,8 +1,10 @@
 import type { ClientConfig } from "@/types/client";
-import { getNavLinks } from "@/utils/navigation";
+import type { NavLink } from "@/utils/navigation";
 
 interface FooterProps {
   config: ClientConfig;
+  /** Los mismos enlaces (ya calculados) que recibe la Navbar. */
+  links: NavLink[];
   /** "dark" para variantes con fondo oscuro (p. ej. artist). Por defecto "light". */
   tone?: "light" | "dark";
 }
@@ -24,12 +26,10 @@ const TONES = {
   },
 } as const;
 
-export function Footer({ config, tone = "light" }: FooterProps) {
+export function Footer({ config, links, tone = "light" }: FooterProps) {
   const currentYear = new Date().getFullYear();
   const isArtist = config.variant === "artist";
   const t = TONES[tone];
-  // Mismos enlaces que la Navbar: nunca apunta a secciones ocultas.
-  const links = getNavLinks(config);
 
   return (
     <footer className={`border-t py-12 ${t.footer}`}>

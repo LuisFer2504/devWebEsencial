@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -33,6 +33,16 @@ const renderSite = (config: ClientConfig) => {
   );
 };
 const withWhatsapp = (config: ClientConfig): ClientConfig => ({ ...config, contact: { ...config.contact, whatsapp: "+51 900 000 000" } });
+
+// Los temas evalúan la fecha del "build" al renderizar (eventos pasados): se fija el reloj para que
+// estos tests no dependan del día en que se ejecutan. Solo se simula Date, no los temporizadores.
+beforeAll(() => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date(2026, 10, 6, 12, 0, 0));
+});
+afterAll(() => {
+  vi.useRealTimers();
+});
 
 const showcaseItem = { title: "Professional", description: "Para servicios profesionales", tags: ["Estudios"] };
 

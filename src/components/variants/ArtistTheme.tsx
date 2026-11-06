@@ -5,7 +5,7 @@ import { ContactSection } from "@/components/shared/ContactSection";
 import { WhatsAppFloatingButton } from "@/components/shared/WhatsAppFloatingButton";
 import { Footer } from "@/components/shared/Footer";
 import { buildWhatsAppLink, itemWhatsAppMessage, resolveCtaHref } from "@/utils/whatsapp";
-import { contactFallbackHref, visibleEvents } from "@/utils/navigation";
+import { contactFallbackHref, getNavbarData, getNavLinks, visibleEvents } from "@/utils/navigation";
 import { readableTextColor } from "@/utils/color";
 import { getEmbedVideoUrl, getVideoThumbnailUrl } from "@/utils/media";
 import { getEventDateParts } from "@/utils/dates";
@@ -58,7 +58,10 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
   const showVideos = sectionVisibility?.videos !== false && Boolean(videos && videos.length > 0);
   const showGallery = sectionVisibility?.gallery !== false && Boolean(gallery && gallery.length > 0);
   // Eventos ocultos o con fecha pasada (respecto a la fecha del build) no se muestran.
-  const upcomingEvents = visibleEvents(config);
+  // Un solo instante (el del build) para la sección de fechas y la navegación: siempre coherentes.
+  const renderedAt = new Date();
+  const upcomingEvents = visibleEvents(config, renderedAt);
+  const navLinks = getNavLinks(config, renderedAt);
   const showEvents = sectionVisibility?.events !== false && upcomingEvents.length > 0;
   const fallbackHref = contactFallbackHref(config);
   const eventConsultHref = waBookingLink || fallbackHref;
@@ -70,7 +73,7 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 antialiased selection:bg-amber-500 selection:text-black">
-      <Navbar config={config} tone="dark" />
+      <Navbar data={getNavbarData(config, navLinks)} tone="dark" />
       <main>
 
       {/* Portada del Artista (Hero Escénico Inmersivo) */}
@@ -481,7 +484,7 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
       </main>
 
       {/* Pie de Página */}
-      <Footer config={config} tone="dark" />
+      <Footer config={config} links={navLinks} tone="dark" />
 
       {/* Botón flotante accesible */}
       <WhatsAppFloatingButton contact={contact} />

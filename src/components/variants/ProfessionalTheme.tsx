@@ -7,7 +7,7 @@ import { Footer } from "@/components/shared/Footer";
 import { Showcase } from "@/components/shared/Showcase";
 import { Faq } from "@/components/shared/Faq";
 import { buildWhatsAppLink, itemWhatsAppMessage, resolveCtaHref } from "@/utils/whatsapp";
-import { contactFallbackHref, showsFaq, showsShowcase } from "@/utils/navigation";
+import { contactFallbackHref, getNavbarData, getNavLinks, showsFaq, showsShowcase } from "@/utils/navigation";
 import { readableTextColor } from "@/utils/color";
 import {
   CheckCircle2,
@@ -48,9 +48,12 @@ export function ProfessionalTheme({ config }: ProfessionalThemeProps) {
   // La imagen de portada es el elemento más grande de la primera pantalla (LCP): se descarga cuanto antes.
   if (hero.heroImage) preload(hero.heroImage, { as: "image", fetchPriority: "high" });
 
+  // Calculados en el servidor y compartidos por Navbar y Footer (la Navbar no recalcula nada al hidratar).
+  const navLinks = getNavLinks(config);
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 antialiased selection:bg-slate-900 selection:text-white">
-      <Navbar config={config} />
+      <Navbar data={getNavbarData(config, navLinks)} />
       <main>
 
       {/* Hero Section */}
@@ -299,7 +302,7 @@ export function ProfessionalTheme({ config }: ProfessionalThemeProps) {
 
         <ContactSection config={config} />
       </main>
-      <Footer config={config} />
+      <Footer config={config} links={navLinks} />
       <WhatsAppFloatingButton contact={contact} />
     </div>
   );

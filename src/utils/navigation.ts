@@ -1,5 +1,6 @@
 import type { ClientConfig } from "@/types/client";
 import { isUpcomingEvent } from "@/utils/dates";
+import { buildWhatsAppLink } from "@/utils/whatsapp";
 
 export interface NavLink {
   name: string;
@@ -28,9 +29,11 @@ export function visibleEvents(config: ClientConfig, now: Date = new Date()) {
 
 /**
  * Enlaces de navegación según la variante y las secciones realmente visibles.
- * Compartido por Navbar y Footer para que nunca apunten a secciones ocultas o inexistentes.
+ * Se calcula UNA vez en el servidor (build) y se pasa ya resuelto a Navbar y Footer, para que nunca
+ * apunten a secciones ocultas y para que el navegador no recalcule nada con su propia fecha.
+ * `now` debe ser el mismo instante usado para decidir qué eventos se renderizan.
  */
-export function getNavLinks(config: ClientConfig): NavLink[] {
+export function getNavLinks(config: ClientConfig, now: Date = new Date()): NavLink[] {
   const vis = config.sectionVisibility;
   const links: NavLink[] = [{ name: "Inicio", href: "#inicio" }];
 
@@ -38,7 +41,7 @@ export function getNavLinks(config: ClientConfig): NavLink[] {
     if (vis?.about !== false) links.push({ name: "Biografía", href: "#biografia" });
     if (vis?.videos !== false && (config.videos?.length ?? 0) > 0) links.push({ name: "Música & Videos", href: "#musica" });
     if (vis?.gallery !== false && (config.gallery?.length ?? 0) > 0) links.push({ name: "Galería", href: "#galeria" });
-    if (vis?.events !== false && visibleEvents(config).length > 0) {
+    if (vis?.events !== false && visibleEvents(config, now).length > 0) {
       links.push({ name: "Presentaciones", href: "#fechas" });
     }
     if (vis?.packages !== false && (config.packages?.filter((p) => p.visible !== false).length ?? 0) > 0) {
@@ -54,6 +57,29 @@ export function getNavLinks(config: ClientConfig): NavLink[] {
 
   if (vis?.contact !== false && hasContactContent(config)) links.push({ name: "Contacto", href: "#contacto" });
   return links;
+}
+
+/** Datos ya resueltos que necesita la Navbar (componente de cliente): nada se recalcula al hidratar. */
+export interface NavbarData {
+  businessName: string;
+  tagline: string;
+  logoUrl?: string;
+  primaryColor: string;
+  isArtist: boolean;
+  whatsappHref: string | null;
+  links: NavLink[];
+}
+
+export function getNavbarData(config: ClientConfig, links: NavLink[]): NavbarData {
+  return {
+    businessName: config.businessName,
+    tagline: config.tagline,
+    ...(config.logoUrl ? { logoUrl: config.logoUrl } : {}),
+    primaryColor: config.colors.primary,
+    isArtist: config.variant === "artist",
+    whatsappHref: buildWhatsAppLink(config.contact.whatsapp, config.contact.whatsappDefaultMessage),
+    links,
+  };
 }
 
 /** Misma condición con la que ContactSection decide si se muestra. */
