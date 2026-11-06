@@ -1,7 +1,7 @@
 {
   "id": "demo-beauty",
-  "businessName": "Aura Studio & Spa",
-  "tagline": "Cuidado facial avanzado, estética corporal y bienestar integral",
+  "businessName": "Brisa Serena Spa",
+  "tagline": "Cuidado facial, masajes y bienestar",
   "variant": "beauty",
   "colors": {
     "primary": "#be185d",
@@ -10,25 +10,25 @@
     "neutralBg": "#fdf2f8"
   },
   "hero": {
-    "badge": "Tu santuario de belleza y relajación en San Isidro",
-    "title": "Renueva tu piel y resalta tu belleza natural con tratamientos exclusivos",
-    "description": "Protocolos personalizados diseñados por cosmetólogas certificadas, aparatología de última generación y productos dermatológicos de alta gama.",
+    "badge": "Tu espacio de belleza y relajación",
+    "title": "Renueva tu piel y regálate un momento de calma",
+    "description": "Spa de ejemplo para mostrar la plantilla Beauty: carta de tratamientos con duración y precio, y reservas por WhatsApp.",
     "ctaPrimary": {
-      "text": "Reservar cita por WhatsApp",
-      "link": "#contacto"
+      "text": "Reservar cita",
+      "link": "#servicios"
     },
     "ctaSecondary": {
-      "text": "Ver carta de tratamientos",
-      "link": "#servicios"
+      "text": "Conócenos",
+      "link": "#nosotros"
     }
   },
   "about": {
-    "title": "Un espacio concebido para tu armonía y cuidado personal",
-    "description": "En Aura Studio & Spa combinamos ciencia estética con un ambiente cálido y relajante. Cada sesión es una pausa consciente en tu rutina para revitalizar tu piel, aliviar tensiones y potenciar tu confianza.",
+    "title": "Un espacio pensado para tu bienestar",
+    "description": "Brisa Serena Spa es un negocio de ejemplo. Así podría presentarse un spa que combina tratamientos faciales y corporales con un ambiente cálido y relajante.",
     "highlights": [
-      "Diagnóstico facial computarizado previo a cada tratamiento",
-      "Cosmecéuticos importados con registro sanitario y alta eficacia",
-      "Cabinas privadas e higienizadas bajo estándares clínicos rigurosos"
+      "Evaluación previa a cada tratamiento",
+      "Productos con registro sanitario",
+      "Cabinas privadas e higienizadas"
     ]
   },
   "services": [
@@ -83,31 +83,24 @@
     }
   ],
   "contact": {
-    "whatsapp": "+51998877665",
-    "whatsappDefaultMessage": "Hola Aura Studio, deseo consultar la disponibilidad de citas para el siguiente tratamiento:",
-    "phone": "+51 1 221 4567",
-    "email": "citas@aurastudio.pe",
-    "address": "Calle Las Camelias 450, Piso 3, San Isidro",
+    "whatsappDefaultMessage": "Hola Web Esencial, estoy viendo la demo de la plantilla Beauty y quiero una página como esta para mi negocio.",
     "city": "Lima, Perú",
-    "googleMapsUrl": "https://maps.google.com/?q=San+Isidro+Lima+Peru",
     "schedule": [
       "Lunes a Viernes: 10:00 AM - 8:00 PM",
       "Sábados: 9:00 AM - 7:00 PM"
-    ],
-    "socialLinks": {
-      "instagram": "https://www.instagram.com",
-      "tiktok": "https://www.tiktok.com",
-      "facebook": "https://www.facebook.com"
-    }
+    ]
   },
   "seo": {
-    "title": "Aura Studio & Spa | Limpieza Facial y Masajes en San Isidro",
-    "description": "Tratamientos faciales, masajes relajantes y lifting en San Isidro, Lima. Diagnóstico de piel y cosmecéuticos de alta gama. Reserva tu cita.",
+    "title": "Brisa Serena Spa | Demo de la plantilla Beauty",
+    "description": "Demostración de Web Esencial: página para un spa de ejemplo con carta de tratamientos, precios y reservas por WhatsApp.",
     "keywords": [
-      "spa en san isidro lima",
-      "limpieza facial profunda lima",
-      "masajes descontracturantes san isidro",
-      "lifting de pestanas lima"
+      "plantilla web spa",
+      "pagina web salon de belleza",
+      "demo web esencial"
     ]
+  },
+  "demoBanner": {
+    "message": "Estás viendo una demostración de Web Esencial. Podemos crear una página como esta para tu negocio.",
+    "templateName": "Beauty"
   }
 }

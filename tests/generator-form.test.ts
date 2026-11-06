@@ -14,6 +14,22 @@ const clientsDir = path.resolve("clients");
 const clientFiles = fs.readdirSync(clientsDir).filter((f) => f.endsWith(".json"));
 const readClient = (file: string): Json => JSON.parse(fs.readFileSync(path.join(clientsDir, file), "utf8"));
 
+// Los demos ya no tienen redes, mapa ni videos (son ficticios): se añaden aquí datos de prueba
+// para seguir cubriendo esos campos en el editor.
+const FIXTURE_VIDEOS = [
+  { id: "vid-a", title: "Video A", url: "https://www.youtube.com/watch?v=aaaaaaaaaaa", platform: "youtube" },
+  { id: "vid-b", title: "Video B", url: "https://vimeo.com/123456789", platform: "vimeo" },
+];
+const withContactExtras = (c: Json): Json => ({
+  ...c,
+  contact: {
+    ...c.contact,
+    googleMapsUrl: "https://maps.google.com/?q=Lima",
+    socialLinks: { instagram: "https://instagram.com/ejemplo", tiktok: "https://tiktok.com/@ejemplo" },
+  },
+});
+const withVideos = (c: Json): Json => ({ ...c, videos: FIXTURE_VIDEOS });
+
 /** Simula el editor: carga → inputs → (opcional) ediciones → guardar. */
 function roundTrip(config: Json, edit?: (form: Json, base: Json, drafts: Json) => void): Json {
   const base = FormModel.clone(config);
@@ -46,8 +62,8 @@ describe("Editor: cargar y guardar sin cambios conserva TODOS los datos", () => 
   });
 
   it("conserva campos que el formulario no muestra (accent, googleMapsUrl, ogImage, títulos, trustBadges, ctaText, bio, ids, platform)", () => {
-    const beauty = readClient("demo-beauty.json");
-    const artist = readClient("demo-artist.json");
+    const beauty = withContactExtras(readClient("demo-beauty.json"));
+    const artist = withVideos(readClient("demo-artist.json"));
     const commerce = readClient("demo-commerce.json");
     const b = roundTrip({ ...beauty, seo: { ...beauty.seo, ogImage: "https://ejemplo.pe/og.jpg" }, sectionTitles: { aboutSubtitle: "Esencia", galleryTitle: "X" } });
     expect(b.colors.accent).toBe(beauty.colors.accent);
@@ -68,6 +84,23 @@ describe("Editor: cargar y guardar sin cambios conserva TODOS los datos", () => 
     expect(a.gallery.map((g: Json) => g.id)).toEqual(artist.gallery.map((g: Json) => g.id));
 
     expect(roundTrip(commerce).trustBadges).toEqual(commerce.trustBadges);
+  });
+
+  it("conserva showcase, faq y demoBanner (Fase 2), que no tienen control en el editor", () => {
+    const web = readClient("web-esencial.json");
+    const demo = readClient("demo-commerce.json");
+    const w = roundTrip(web, (form) => {
+      form.tagline = "Otro lema";
+    });
+    expect(w.tagline).toBe("Otro lema");
+    expect(w.showcase).toEqual(web.showcase);
+    expect(w.faq).toEqual(web.faq);
+    expect(saved(w).showcase).toEqual(web.showcase);
+    const d = roundTrip(demo, (form) => {
+      form.contactWa = "+51 900 000 000";
+    });
+    expect(d.demoBanner).toEqual(demo.demoBanner);
+    expect(saved(d).demoBanner).toEqual(demo.demoBanner);
   });
 
   it("conserva campos futuros desconocidos dentro de objetos y elementos de lista", () => {
@@ -96,7 +129,7 @@ describe("Editor: ediciones", () => {
   });
 
   it("vaciar un campo opcional lo elimina; vaciar uno obligatorio produce un error de validación", () => {
-    const original = readClient("demo-beauty.json");
+    const original = withContactExtras(readClient("demo-beauty.json"));
     const r = roundTrip(original, (form) => {
       form.heroBadge = "";
       form.social.tiktok = "";
@@ -123,7 +156,7 @@ describe("Editor: ediciones", () => {
   });
 
   it("descarta solo elementos totalmente vacíos y genera ids únicos", () => {
-    const original = readClient("demo-artist.json");
+    const original = withVideos(readClient("demo-artist.json"));
     const r = roundTrip(original, (_form, base) => {
       base.events.push({ id: "", title: "", date: "", venue: "", city: "", visible: true });
       base.videos.push({ title: "Nuevo", url: "https://youtu.be/aaaaaaaaaaa" });

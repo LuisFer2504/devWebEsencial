@@ -85,8 +85,14 @@ describe("Navegación", () => {
   it("cada enlace apunta a una sección con contenido", () => {
     const pro = loadClientConfig("demo-professional");
     expect(getNavLinks(pro).map((l) => l.href)).toEqual(["#inicio", "#nosotros", "#servicios", "#ventajas", "#contacto"]);
-    const artist = loadClientConfig("demo-artist");
-    expect(getNavLinks(artist).map((l) => l.href)).toEqual(["#inicio", "#biografia", "#musica", "#galeria", "#fechas", "#paquetes", "#contacto"]);
+    // Fechas explícitas: el resultado no depende del día en que se ejecute el test.
+    const artist = loadClientConfig("demo-artist"); // eventos: 20 Marzo 2027 y 17 Abril 2027
+    const antes = new Date(2027, 0, 1);
+    const despues = new Date(2027, 4, 1);
+    expect(getNavLinks(artist, antes).map((l) => l.href)).toEqual(["#inicio", "#biografia", "#galeria", "#fechas", "#paquetes", "#contacto"]);
+    expect(getNavLinks(artist, despues).map((l) => l.href)).toEqual(["#inicio", "#biografia", "#galeria", "#paquetes", "#contacto"]);
+    const sinAño = { ...artist, events: artist.events?.map((e) => ({ ...e, date: "Próximamente" })) };
+    expect(getNavLinks(sinAño, new Date(2035, 0, 1)).map((l) => l.href)).toContain("#fechas");
   });
 
   it("omite secciones ocultas o vacías", () => {

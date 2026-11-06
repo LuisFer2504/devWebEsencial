@@ -1,7 +1,7 @@
 {
   "id": "demo-professional",
-  "businessName": "Alva & Asociados",
-  "tagline": "Asesoría contable, tributaria y laboral para empresas en Perú",
+  "businessName": "Horizonte Contable",
+  "tagline": "Asesoría contable y tributaria para emprendedores y pequeñas empresas",
   "variant": "professional",
   "colors": {
     "primary": "#1e3a8a",
@@ -10,25 +10,25 @@
     "neutralBg": "#f8fafc"
   },
   "hero": {
-    "badge": "Más de 12 años asesorando PYMES en Perú",
-    "title": "Tranquilidad contable y tributaria para hacer crecer tu empresa",
-    "description": "Evita multas ante SUNAT, optimiza tus impuestos y formaliza tu negocio con un equipo de contadores colegiados comprometidos con tus metas.",
+    "badge": "Asesoría para emprendedores y pequeñas empresas",
+    "title": "Orden contable y tributario para que tu negocio crezca tranquilo",
+    "description": "Mantén tus obligaciones al día, entiende los números de tu empresa y formaliza tu negocio con un acompañamiento cercano y explicado en lenguaje simple.",
     "ctaPrimary": {
-      "text": "Solicitar asesoría inicial",
-      "link": "#contacto"
+      "text": "Ver servicios",
+      "link": "#servicios"
     },
     "ctaSecondary": {
-      "text": "Ver nuestros servicios",
-      "link": "#servicios"
+      "text": "Solicitar asesoría",
+      "link": "whatsapp"
     }
   },
   "about": {
-    "title": "Socios estratégicos para el crecimiento de tu negocio",
-    "description": "En Alva & Asociados brindamos soporte contable, tributario y financiero integral para emprendedores y empresas peruanas. Nos enfocamos en mantener tu empresa en regla con la SUNAT, optimizar costos y darte reportes claros para la toma de decisiones.",
+    "title": "Un aliado para las decisiones de tu negocio",
+    "description": "Horizonte Contable es un estudio de ejemplo creado para mostrar la plantilla Professional. Así podría presentarse un estudio que brinda soporte contable, tributario y laboral a emprendedores y pequeñas empresas, con reportes claros y atención personalizada.",
     "highlights": [
-      "Equipo de Contadores Públicos Colegiados (CCPL)",
-      "Atención personalizada con informes mensuales comprensibles",
-      "Especialistas en regímenes tributarios MYPE, Especial y General"
+      "Atención personalizada con informes mensuales fáciles de entender",
+      "Acompañamiento en regímenes tributarios para pequeñas empresas",
+      "Recordatorios de vencimientos para evitar multas"
     ]
   },
   "services": [
@@ -58,8 +58,8 @@
   ],
   "advantages": [
     {
-      "title": "Cero multas y fiscalizaciones",
-      "description": "Monitoreo permanente de tus obligaciones tributarias y laborales para prevenir sanciones."
+      "title": "Prevención de multas",
+      "description": "Seguimiento de tus obligaciones tributarias y laborales para prevenir sanciones."
     },
     {
       "title": "Reportes financieros claros",
@@ -67,7 +67,7 @@
     },
     {
       "title": "Disponibilidad y respuesta rápida",
-      "description": "Comunicación directa por WhatsApp y correo para resolver dudas urgentes cuando lo necesites."
+      "description": "Comunicación directa por WhatsApp para resolver dudas cuando lo necesites."
     },
     {
       "title": "Tarifas transparentes adaptadas a tu volumen",
@@ -75,30 +75,24 @@
     }
   ],
   "contact": {
-    "whatsapp": "+51987654321",
-    "whatsappDefaultMessage": "Hola Alva & Asociados, quisiera coordinar una consulta contable para mi empresa.",
-    "phone": "+51 1 445 6789",
-    "email": "contacto@estudioalva.pe",
-    "address": "Av. José Pardo 601, Oficina 804, Miraflores",
+    "whatsappDefaultMessage": "Hola Web Esencial, estoy viendo la demo de la plantilla Professional y quiero una página como esta para mi negocio.",
     "city": "Lima, Perú",
-    "googleMapsUrl": "https://maps.google.com/?q=Miraflores+Lima+Peru",
     "schedule": [
       "Lunes a Viernes: 8:30 AM - 6:00 PM",
       "Sábados: 9:00 AM - 1:00 PM"
-    ],
-    "socialLinks": {
-      "linkedin": "https://www.linkedin.com",
-      "facebook": "https://www.facebook.com"
-    }
+    ]
   },
   "seo": {
-    "title": "Alva & Asociados | Estudio Contable y Tributario en Lima",
-    "description": "Asesoría contable, declaraciones SUNAT, planillas y formalización de empresas en Lima, Perú. Contadores colegiados para PYMES.",
+    "title": "Horizonte Contable | Demo de la plantilla Professional",
+    "description": "Demostración de Web Esencial: página para un estudio contable de ejemplo con servicios, ventajas y contacto por WhatsApp.",
     "keywords": [
-      "estudio contable lima",
-      "asesoria tributaria sunat",
-      "constitucion de empresas peru",
-      "contabilidad pymes miraflores"
+      "plantilla web estudio contable",
+      "pagina web profesional",
+      "demo web esencial"
     ]
+  },
+  "demoBanner": {
+    "message": "Estás viendo una demostración de Web Esencial. Podemos crear una página como esta para tu negocio.",
+    "templateName": "Professional"
   }
 }

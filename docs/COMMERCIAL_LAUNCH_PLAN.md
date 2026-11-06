@@ -312,6 +312,8 @@ Formato: **Problema · Archivos · Dependencias · Aceptación · Pruebas · Rie
 
 ### Fase 2 — Experiencia comercial y demos (P0/P1)
 
+> **Estado (rama `dev-fase2-demos-comerciales`):** 2.1, 2.2 y 2.3 implementadas. Pendiente del propietario: número de WhatsApp comercial, URLs publicadas de los demos y precios. LCP en frío ≈ 3,0 s (Slow 4G + CPU ×4) en la página comercial, igual que la línea base de `produccion` (≈ 3,1 s): mejora de rendimiento pendiente, no introducida por esta fase.
+
 **2.1 Demos ficticios y seguros** (P0, requiere decisión de contenido)
 - *Problema:* persona real, videos ajenos, marcas reales y teléfonos de terceros.
 - *Archivos:* `clients/demo-*.json`, `tests/client-config.test.ts` (fija `businessName`).

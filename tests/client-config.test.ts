@@ -6,7 +6,7 @@ describe("ClientConfigSchema validation", () => {
   it("debe cargar y validar exitosamente el cliente demo-professional", () => {
     const config = loadClientConfig("demo-professional");
     expect(config.id).toBe("demo-professional");
-    expect(config.businessName).toBe("Alva & Asociados");
+    expect(config.businessName).toBe("Horizonte Contable");
     expect(config.variant).toBe("professional");
     expect(config.services.length).toBeGreaterThan(0);
     expect(config.advantages.length).toBeGreaterThan(0);
@@ -15,7 +15,7 @@ describe("ClientConfigSchema validation", () => {
   it("debe cargar y validar exitosamente el cliente demo-commerce", () => {
     const config = loadClientConfig("demo-commerce");
     expect(config.id).toBe("demo-commerce");
-    expect(config.businessName).toBe("Ferretería El Maestro");
+    expect(config.businessName).toBe("Ferretería Martillo Azul");
     expect(config.variant).toBe("commerce");
     expect(config.services.length).toBeGreaterThan(0);
   });
@@ -23,7 +23,7 @@ describe("ClientConfigSchema validation", () => {
   it("debe cargar y validar exitosamente el cliente demo-beauty", () => {
     const config = loadClientConfig("demo-beauty");
     expect(config.id).toBe("demo-beauty");
-    expect(config.businessName).toBe("Aura Studio & Spa");
+    expect(config.businessName).toBe("Brisa Serena Spa");
     expect(config.variant).toBe("beauty");
     expect(config.services.length).toBeGreaterThan(0);
   });
@@ -31,10 +31,10 @@ describe("ClientConfigSchema validation", () => {
   it("debe cargar y validar exitosamente el cliente demo-artist (nueva variante)", () => {
     const config = loadClientConfig("demo-artist");
     expect(config.id).toBe("demo-artist");
-    expect(config.businessName).toBe("Tyler Kealey");
+    expect(config.businessName).toBe("Elio Marén");
     expect(config.variant).toBe("artist");
     expect(config.packages?.length).toBeGreaterThan(0);
-    expect(config.videos?.length).toBeGreaterThan(0);
+    expect(config.videos).toBeUndefined(); // demo ficticio: sin videos de terceros
     expect(config.events?.length).toBeGreaterThan(0);
     expect(config.gallery?.length).toBeGreaterThan(0);
   });

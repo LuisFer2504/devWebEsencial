@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import type { ClientConfig } from "@/types/client";
-import { buildWhatsAppLink } from "@/utils/whatsapp";
-import { getNavLinks } from "@/utils/navigation";
+import type { NavbarData } from "@/utils/navigation";
 import { readableTextColor } from "@/utils/color";
 import { Menu, X, MessageCircle } from "lucide-react";
 
 interface NavbarProps {
-  config: ClientConfig;
+  /** Calculado en el servidor con getNavbarData: la Navbar no evalúa fechas ni reglas de visibilidad. */
+  data: NavbarData;
   /** "dark" para variantes con fondo oscuro (p. ej. artist). Por defecto "light". */
   tone?: "light" | "dark";
 }
@@ -36,13 +35,11 @@ const TONES = {
   },
 } as const;
 
-export function Navbar({ config, tone = "light" }: NavbarProps) {
+export function Navbar({ data, tone = "light" }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const isArtist = config.variant === "artist";
+  const { isArtist, links: navLinks, whatsappHref: waLink } = data;
   const t = TONES[tone];
-  const navLinks = getNavLinks(config);
 
-  const waLink = buildWhatsAppLink(config.contact.whatsapp, config.contact.whatsappDefaultMessage);
   const ctaButtonText = isArtist ? "Contratar" : waLink ? "WhatsApp" : "Contáctanos";
   const hasContactSection = navLinks.some((l) => l.href === "#contacto");
 
@@ -51,13 +48,13 @@ export function Navbar({ config, tone = "light" }: NavbarProps) {
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logotipo / Nombre */}
         <a href="#inicio" className="flex min-w-0 items-center gap-2 text-left focus:outline-none focus:ring-2 focus:ring-offset-2">
-          {config.logoUrl ? (
+          {data.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={config.logoUrl} alt={config.businessName} className="h-10 w-auto object-contain" />
+            <img src={data.logoUrl} alt={data.businessName} className="h-10 w-auto object-contain" />
           ) : (
             <div className="flex min-w-0 flex-col">
-              <span className={`truncate text-xl font-bold tracking-tight sm:text-2xl ${t.name}`}>{config.businessName}</span>
-              <span className={`text-xs font-medium line-clamp-1 ${t.tagline}`}>{config.tagline}</span>
+              <span className={`truncate text-xl font-bold tracking-tight sm:text-2xl ${t.name}`}>{data.businessName}</span>
+              <span className={`text-xs font-medium line-clamp-1 ${t.tagline}`}>{data.tagline}</span>
             </div>
           )}
         </a>
@@ -82,7 +79,7 @@ export function Navbar({ config, tone = "light" }: NavbarProps) {
               href={waLink}
               target="_blank"
               rel="noopener noreferrer"
-              style={isArtist ? { backgroundColor: config.colors.primary, color: readableTextColor(config.colors.primary) } : undefined}
+              style={isArtist ? { backgroundColor: data.primaryColor, color: readableTextColor(data.primaryColor) } : undefined}
               className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 !isArtist ? "bg-emerald-700 hover:bg-emerald-800" : ""
               }`}

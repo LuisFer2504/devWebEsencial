@@ -4,7 +4,8 @@ import { Navbar } from "@/components/shared/Navbar";
 import { ContactSection } from "@/components/shared/ContactSection";
 import { WhatsAppFloatingButton } from "@/components/shared/WhatsAppFloatingButton";
 import { Footer } from "@/components/shared/Footer";
-import { buildWhatsAppLink } from "@/utils/whatsapp";
+import { buildWhatsAppLink, itemWhatsAppMessage, resolveCtaHref } from "@/utils/whatsapp";
+import { contactFallbackHref, getNavbarData, getNavLinks, visibleEvents } from "@/utils/navigation";
 import { readableTextColor } from "@/utils/color";
 import { getEmbedVideoUrl, getVideoThumbnailUrl } from "@/utils/media";
 import { getEventDateParts } from "@/utils/dates";
@@ -37,7 +38,6 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
     artistProfile,
     gallery,
     videos,
-    events,
     packages,
     sectionTitles,
     sectionVisibility,
@@ -57,7 +57,14 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
   const showAbout = sectionVisibility?.about !== false;
   const showVideos = sectionVisibility?.videos !== false && Boolean(videos && videos.length > 0);
   const showGallery = sectionVisibility?.gallery !== false && Boolean(gallery && gallery.length > 0);
-  const showEvents = sectionVisibility?.events !== false && Boolean(events && events.filter((e) => e.visible !== false).length > 0);
+  // Eventos ocultos o con fecha pasada (respecto a la fecha del build) no se muestran.
+  // Un solo instante (el del build) para la sección de fechas y la navegación: siempre coherentes.
+  const renderedAt = new Date();
+  const upcomingEvents = visibleEvents(config, renderedAt);
+  const navLinks = getNavLinks(config, renderedAt);
+  const showEvents = sectionVisibility?.events !== false && upcomingEvents.length > 0;
+  const fallbackHref = contactFallbackHref(config);
+  const eventConsultHref = waBookingLink || fallbackHref;
   const showPackages = sectionVisibility?.packages !== false && Boolean(packages && packages.filter((p) => p.visible !== false).length > 0);
   const portrait = artistProfile?.portraitImage || about.aboutImage;
 
@@ -66,7 +73,7 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 antialiased selection:bg-amber-500 selection:text-black">
-      <Navbar config={config} tone="dark" />
+      <Navbar data={getNavbarData(config, navLinks)} tone="dark" />
       <main>
 
       {/* Portada del Artista (Hero Escénico Inmersivo) */}
@@ -126,7 +133,7 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
           {/* Botones de acción de la portada */}
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
-              href={waBookingLink || hero.ctaPrimary.link}
+              href={waBookingLink || resolveCtaHref(hero.ctaPrimary.link, config) || "#inicio"}
               target={waBookingLink ? "_blank" : undefined}
               rel={waBookingLink ? "noopener noreferrer" : undefined}
               style={{ backgroundColor: colors.primary || "#d97706", color: readableTextColor(colors.primary || "#d97706") }}
@@ -136,9 +143,9 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
               <ArrowRight className="h-4 w-4" />
             </a>
 
-            {hero.ctaSecondary && (
+            {hero.ctaSecondary && resolveCtaHref(hero.ctaSecondary.link, config) && (
               <a
-                href={hero.ctaSecondary.link}
+                href={resolveCtaHref(hero.ctaSecondary.link, config) ?? undefined}
                 className="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-zinc-700 bg-zinc-900/80 px-8 py-4 text-sm font-semibold text-zinc-200 backdrop-blur-sm transition-colors hover:bg-zinc-800 hover:text-white"
               >
                 {hero.ctaSecondary.text}
@@ -321,9 +328,7 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
             </div>
 
             <div className="space-y-4">
-              {events
-                ?.filter((ev) => ev.visible !== false)
-                .map((ev) => {
+              {upcomingEvents.map((ev) => {
                   const when = getEventDateParts(ev.date);
                   return (
                   <div
@@ -365,16 +370,17 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
                           <Ticket className="h-3.5 w-3.5" />
                           <span>Entradas / Info</span>
                         </a>
-                      ) : (
+                      ) : eventConsultHref ? (
                         <a
-                          href={waBookingLink || "#contacto"}
+                          href={eventConsultHref}
                           target={waBookingLink ? "_blank" : undefined}
                           rel={waBookingLink ? "noopener noreferrer" : undefined}
                           className="inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-xs font-semibold text-zinc-200 hover:bg-zinc-700"
                         >
                           <span>Consultar</span>
+                          <span className="sr-only">: {ev.title}</span>
                         </a>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                   );
@@ -406,8 +412,9 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
                 .map((pkg) => {
                   const waPkgLink = buildWhatsAppLink(
                     contact.whatsapp,
-                    `Hola ${stageName}, me interesa cotizar el paquete "${pkg.title}" para una presentación.`
+                    itemWhatsAppMessage(config, `Hola ${stageName}, me interesa cotizar el paquete "${pkg.title}" para una presentación.`, pkg.title)
                   );
+                  const pkgHref = waPkgLink || pkg.ctaLink || fallbackHref;
 
                   return (
                     <div
@@ -452,15 +459,18 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
                         )}
                       </div>
 
+                      {pkgHref && (
                       <a
-                        href={waPkgLink || pkg.ctaLink || "#contacto"}
+                        href={pkgHref}
                         target={waPkgLink ? "_blank" : undefined}
                         rel={waPkgLink ? "noopener noreferrer" : undefined}
                         className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-3 text-xs font-bold uppercase tracking-wider text-black shadow-md hover:bg-amber-400 transition-colors"
                       >
                         <span>{pkg.ctaText || "Consultar Fecha"}</span>
-                        <ArrowRight className="h-3.5 w-3.5" />
+                        <span className="sr-only">: {pkg.title}</span>
+                        <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                       </a>
+                      )}
                     </div>
                   );
                 })}
@@ -474,7 +484,7 @@ export function ArtistTheme({ config }: ArtistThemeProps) {
       </main>
 
       {/* Pie de Página */}
-      <Footer config={config} tone="dark" />
+      <Footer config={config} links={navLinks} tone="dark" />
 
       {/* Botón flotante accesible */}
       <WhatsAppFloatingButton contact={contact} />
